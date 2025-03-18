@@ -1,4 +1,4 @@
-# RentalEquipmentManagementSystem
+
 # **Equipment Rental Management System**  
 
 An advanced **Equipment Rental Management System** built using **Entity Framework Core (Database-First Approach)** and **SQL Server**. This system allows businesses to manage rental transactions, track equipment availability, handle customer requests, and automate notifications efficiently.  
