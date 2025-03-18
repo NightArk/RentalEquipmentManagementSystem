@@ -27,8 +27,4 @@ An advanced **Equipment Rental Management System** built using **Entity Framewor
    ```
 2. Set up the **SQL Server database** using the provided schema.  
 3. Update the **connection string** in `appsettings.json`.  
-4. Run the **Entity Framework Core scaffold command**:  
-   ```sh
-   Scaffold-DbContext "Server=YourServer;Database=EquipmentRentalDB;Trusted_Connection=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Model -Context "ERManagementDBContext" -DataAnnotations
-   ```
-5. Start the application and enjoy! 🚀  
+4. Start the application and enjoy! 🚀  
