@@ -19,6 +19,7 @@ namespace RentalEquipmentManagementApp
         {
             InitializeComponent();
             _authService = new AuthService(new EquipmentRentalDBContext());
+            this.StartPosition = FormStartPosition.CenterScreen; // Center the form on the screen
         }
 
         private void btnLogin_Click(object sender, EventArgs e)
@@ -37,10 +38,9 @@ namespace RentalEquipmentManagementApp
                 return;
             }
 
-            _authService.LogAccess(user.Id, "Login");
+            var userDto = _authService.Authenticate(txtEmail.Text, txtPassword.Text);
+            new MainDashboardForm(userDto).Show();
             this.Hide();
-            MainDashboardForm mainDashboardForm = new MainDashboardForm();
-            mainDashboardForm.Show();
         }
     }
 }

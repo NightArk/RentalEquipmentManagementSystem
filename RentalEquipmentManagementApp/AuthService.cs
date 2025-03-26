@@ -1,4 +1,5 @@
-﻿using RentalEquipmentManagementLogic.Models;
+﻿using RentalEquipmentManagementLogic;
+using RentalEquipmentManagementLogic.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,11 +18,18 @@ namespace RentalEquipmentManagementApp
             _context = context;
         }
 
-        public User? Authenticate(string email, string password)
+        public UserDto? Authenticate(string email, string password)
         {
-            return _context.Users.FirstOrDefault(u =>
-                u.Email == email &&
-                u.PasswordHash == password); // In production, use hashed passwords
+            var user = _context.Users.FirstOrDefault(u => u.Name == email && u.PasswordHash == password);
+            if (user == null) return null;
+
+            return new UserDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Role = user.Role
+            };
         }
 
         public void LogAccess(int userId, string action)

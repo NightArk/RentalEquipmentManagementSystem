@@ -1,6 +1,6 @@
 ﻿namespace RentalEquipmentManagementApp
 {
-    partial class MainDashboardForm
+    partial class RentalRequestsForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,33 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
-            lblWelcome = new Label();
-            SuspendLayout();
-            // 
-            // lblWelcome
-            // 
-            lblWelcome.AutoSize = true;
-            lblWelcome.Location = new Point(664, 45);
-            lblWelcome.Name = "lblWelcome";
-            lblWelcome.Size = new Size(50, 20);
-            lblWelcome.TabIndex = 0;
-            lblWelcome.Text = "label1";
-            // 
-            // MainDashboardForm
-            // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
-            Controls.Add(lblWelcome);
-            Name = "MainDashboardForm";
-            Text = "MainDashboardForm";
-            Load += MainDashboardForm_Load;
-            ResumeLayout(false);
-            PerformLayout();
+            this.components = new System.ComponentModel.Container();
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Text = "RentalRequestsForm";
         }
 
         #endregion
-
-        private Label lblWelcome;
     }
 }

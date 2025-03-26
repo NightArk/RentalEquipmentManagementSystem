@@ -31,44 +31,60 @@
             txtEmail = new TextBox();
             txtPassword = new TextBox();
             btnLogin = new Button();
+            groupBox1 = new GroupBox();
+            groupBox1.SuspendLayout();
             SuspendLayout();
             // 
             // txtEmail
             // 
-            txtEmail.Location = new Point(419, 185);
+            txtEmail.Location = new Point(75, 90);
             txtEmail.Name = "txtEmail";
-            txtEmail.Size = new Size(196, 27);
+            txtEmail.Size = new Size(215, 31);
             txtEmail.TabIndex = 0;
             // 
             // txtPassword
             // 
-            txtPassword.Location = new Point(419, 231);
+            txtPassword.Location = new Point(75, 149);
             txtPassword.Name = "txtPassword";
-            txtPassword.Size = new Size(196, 27);
+            txtPassword.Size = new Size(215, 31);
             txtPassword.TabIndex = 1;
             // 
             // btnLogin
             // 
-            btnLogin.Location = new Point(419, 299);
+            btnLogin.BackColor = SystemColors.HotTrack;
+            btnLogin.ForeColor = SystemColors.ControlLightLight;
+            btnLogin.Location = new Point(75, 214);
             btnLogin.Name = "btnLogin";
-            btnLogin.Size = new Size(196, 29);
+            btnLogin.Size = new Size(215, 57);
             btnLogin.TabIndex = 2;
             btnLogin.Text = "Login";
-            btnLogin.UseVisualStyleBackColor = true;
+            btnLogin.UseVisualStyleBackColor = false;
             btnLogin.Click += btnLogin_Click;
+            // 
+            // groupBox1
+            // 
+            groupBox1.Controls.Add(btnLogin);
+            groupBox1.Controls.Add(txtEmail);
+            groupBox1.Controls.Add(txtPassword);
+            groupBox1.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            groupBox1.Location = new Point(174, 58);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new Size(389, 314);
+            groupBox1.TabIndex = 3;
+            groupBox1.TabStop = false;
+            groupBox1.Text = "User Login";
             // 
             // LoginForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Controls.Add(btnLogin);
-            Controls.Add(txtPassword);
-            Controls.Add(txtEmail);
+            Controls.Add(groupBox1);
             Name = "LoginForm";
             Text = "LoginForm";
+            groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
@@ -76,5 +92,6 @@
         private TextBox txtEmail;
         private TextBox txtPassword;
         private Button btnLogin;
+        private GroupBox groupBox1;
     }
 }
