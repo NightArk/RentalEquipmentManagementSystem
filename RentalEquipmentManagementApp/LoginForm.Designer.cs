@@ -37,14 +37,14 @@
             // 
             // txtEmail
             // 
-            txtEmail.Location = new Point(75, 90);
+            txtEmail.Location = new Point(90, 90);
             txtEmail.Name = "txtEmail";
             txtEmail.Size = new Size(215, 31);
             txtEmail.TabIndex = 0;
             // 
             // txtPassword
             // 
-            txtPassword.Location = new Point(75, 149);
+            txtPassword.Location = new Point(90, 149);
             txtPassword.Name = "txtPassword";
             txtPassword.Size = new Size(215, 31);
             txtPassword.TabIndex = 1;
@@ -53,7 +53,7 @@
             // 
             btnLogin.BackColor = SystemColors.HotTrack;
             btnLogin.ForeColor = SystemColors.ControlLightLight;
-            btnLogin.Location = new Point(75, 214);
+            btnLogin.Location = new Point(90, 214);
             btnLogin.Name = "btnLogin";
             btnLogin.Size = new Size(215, 57);
             btnLogin.TabIndex = 2;
@@ -67,7 +67,7 @@
             groupBox1.Controls.Add(txtEmail);
             groupBox1.Controls.Add(txtPassword);
             groupBox1.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            groupBox1.Location = new Point(174, 58);
+            groupBox1.Location = new Point(199, 57);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new Size(389, 314);
             groupBox1.TabIndex = 3;
