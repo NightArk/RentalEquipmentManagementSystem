@@ -32,13 +32,14 @@ namespace RentalEquipmentManagementApp
             };
         }
 
-        public void LogAccess(int userId, string action)
+        public void LogAccess(int userId, string action, string affectedData)
         {
             _context.Logs.Add(new Log
             {
                 UserId = userId,
                 Action = action,
                 Timestamp = DateTime.Now,
+                AffectedData = affectedData,
                 Source = "Desktop"
             });
             _context.SaveChanges();

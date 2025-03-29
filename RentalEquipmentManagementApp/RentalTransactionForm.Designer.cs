@@ -1,6 +1,6 @@
 ﻿namespace RentalEquipmentManagementApp
 {
-    partial class RentalRequestsForm
+    partial class RentalTransactionForm
     {
         /// <summary>
         /// Required designer variable.
@@ -30,14 +30,14 @@
         {
             SuspendLayout();
             // 
-            // RentalRequestsForm
+            // RentalTransactionForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Name = "RentalRequestsForm";
-            Text = "RentalRequestsForm";
-            Load += RentalRequestsForm_Load;
+            Name = "RentalTransactionForm";
+            Text = "RentalTransactionForm";
+            Load += RentalTransactionForm_Load;
             ResumeLayout(false);
         }
 

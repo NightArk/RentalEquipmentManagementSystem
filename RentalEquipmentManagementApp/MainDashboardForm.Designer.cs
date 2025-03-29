@@ -31,10 +31,10 @@
             lblWelcome = new Label();
             btnLogout = new Button();
             groupBox1 = new GroupBox();
-            button5 = new Button();
-            button4 = new Button();
-            button3 = new Button();
-            button2 = new Button();
+            btnEquipmentManagement = new Button();
+            btnReturnRecord = new Button();
+            btnRentalTransaction = new Button();
+            btnRentalRequests = new Button();
             groupBox1.SuspendLayout();
             SuspendLayout();
             // 
@@ -60,15 +60,15 @@
             btnLogout.TabIndex = 1;
             btnLogout.Text = "Log out";
             btnLogout.UseVisualStyleBackColor = false;
-            btnLogout.Click += button1_Click;
+            btnLogout.Click += btnLogout_Click;
             // 
             // groupBox1
             // 
-            groupBox1.Controls.Add(button5);
+            groupBox1.Controls.Add(btnEquipmentManagement);
             groupBox1.Controls.Add(btnLogout);
-            groupBox1.Controls.Add(button4);
-            groupBox1.Controls.Add(button3);
-            groupBox1.Controls.Add(button2);
+            groupBox1.Controls.Add(btnReturnRecord);
+            groupBox1.Controls.Add(btnRentalTransaction);
+            groupBox1.Controls.Add(btnRentalRequests);
             groupBox1.Location = new Point(12, 46);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new Size(236, 443);
@@ -76,41 +76,45 @@
             groupBox1.TabStop = false;
             groupBox1.Text = "groupBox1";
             // 
-            // button5
+            // btnEquipmentManagement
             // 
-            button5.Location = new Point(16, 292);
-            button5.Name = "button5";
-            button5.Size = new Size(200, 62);
-            button5.TabIndex = 3;
-            button5.Text = "Equipment Information Management";
-            button5.UseVisualStyleBackColor = true;
+            btnEquipmentManagement.Location = new Point(16, 292);
+            btnEquipmentManagement.Name = "btnEquipmentManagement";
+            btnEquipmentManagement.Size = new Size(200, 62);
+            btnEquipmentManagement.TabIndex = 3;
+            btnEquipmentManagement.Text = "Equipment Information Management";
+            btnEquipmentManagement.UseVisualStyleBackColor = true;
+            btnEquipmentManagement.Click += btnEquipmentManagement_Click;
             // 
-            // button4
+            // btnReturnRecord
             // 
-            button4.Location = new Point(16, 212);
-            button4.Name = "button4";
-            button4.Size = new Size(200, 62);
-            button4.TabIndex = 2;
-            button4.Text = "Equipment Check-in (Return Record)";
-            button4.UseVisualStyleBackColor = true;
+            btnReturnRecord.Location = new Point(16, 212);
+            btnReturnRecord.Name = "btnReturnRecord";
+            btnReturnRecord.Size = new Size(200, 62);
+            btnReturnRecord.TabIndex = 2;
+            btnReturnRecord.Text = "Equipment Check-in (Return Record)";
+            btnReturnRecord.UseVisualStyleBackColor = true;
+            btnReturnRecord.Click += btnReturnRecord_Click;
             // 
-            // button3
+            // btnRentalTransaction
             // 
-            button3.Location = new Point(16, 132);
-            button3.Name = "button3";
-            button3.Size = new Size(200, 62);
-            button3.TabIndex = 1;
-            button3.Text = "Equipment Checkout (Rental Transaction)";
-            button3.UseVisualStyleBackColor = true;
+            btnRentalTransaction.Location = new Point(16, 132);
+            btnRentalTransaction.Name = "btnRentalTransaction";
+            btnRentalTransaction.Size = new Size(200, 62);
+            btnRentalTransaction.TabIndex = 1;
+            btnRentalTransaction.Text = "Equipment Checkout (Rental Transaction)";
+            btnRentalTransaction.UseVisualStyleBackColor = true;
+            btnRentalTransaction.Click += btnRentalTransaction_Click;
             // 
-            // button2
+            // btnRentalRequests
             // 
-            button2.Location = new Point(16, 52);
-            button2.Name = "button2";
-            button2.Size = new Size(200, 62);
-            button2.TabIndex = 0;
-            button2.Text = "Rental Requests Management";
-            button2.UseVisualStyleBackColor = true;
+            btnRentalRequests.Location = new Point(16, 52);
+            btnRentalRequests.Name = "btnRentalRequests";
+            btnRentalRequests.Size = new Size(200, 62);
+            btnRentalRequests.TabIndex = 0;
+            btnRentalRequests.Text = "Rental Requests Management";
+            btnRentalRequests.UseVisualStyleBackColor = true;
+            btnRentalRequests.Click += btnRentalRequests_Click;
             // 
             // MainDashboardForm
             // 
@@ -132,9 +136,9 @@
         private Label lblWelcome;
         private Button btnLogout;
         private GroupBox groupBox1;
-        private Button button3;
-        private Button button2;
-        private Button button5;
-        private Button button4;
+        private Button btnRentalTransaction;
+        private Button btnRentalRequests;
+        private Button btnEquipmentManagement;
+        private Button btnReturnRecord;
     }
 }

@@ -1,4 +1,5 @@
-﻿using RentalEquipmentManagementLogic;
+﻿using Microsoft.EntityFrameworkCore;
+using RentalEquipmentManagementLogic;
 using RentalEquipmentManagementLogic.Models;
 using System;
 using System.Collections.Generic;
@@ -12,19 +13,18 @@ using System.Windows.Forms;
 
 namespace RentalEquipmentManagementApp
 {
-    public partial class RentalRequestsForm : Form
+    public partial class ReturnRecordForm : Form
     {
         private readonly UserDto _currentUser;
         private readonly EquipmentRentalDBContext _context;
-        public RentalRequestsForm(UserDto currentUser)
+        public ReturnRecordForm(UserDto currentUser)
         {
             InitializeComponent();
-            
             _currentUser = currentUser;
             _context = new EquipmentRentalDBContext();
         }
 
-        private void RentalRequestsForm_Load(object sender, EventArgs e)
+        private void ReturnRecordForm_Load(object sender, EventArgs e)
         {
 
         }

@@ -1,4 +1,5 @@
-﻿using RentalEquipmentManagementLogic.Models;
+﻿using RentalEquipmentManagementLogic;
+using RentalEquipmentManagementLogic.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -32,15 +33,21 @@ namespace RentalEquipmentManagementApp
                 return;
             }
 
-            if (user.Role != "Admin" && user.Role != "Manager")
+            if (user.Role != "Admin" && user.Role != "Manager" && user.Role != "RentalManager")
             {
                 MessageBox.Show("Access denied. This application is for administrators and managers only.");
                 return;
             }
 
-            var userDto = _authService.Authenticate(txtEmail.Text, txtPassword.Text);
-            new MainDashboardForm(userDto).Show();
+           
+            new MainDashboardForm(user).Show();
+            _authService.LogAccess(user.Id,"Login","none");
             this.Hide();
+        }
+
+        private void LoginForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

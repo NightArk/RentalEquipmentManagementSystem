@@ -82,6 +82,7 @@
             Controls.Add(groupBox1);
             Name = "LoginForm";
             Text = "LoginForm";
+            Load += LoginForm_Load;
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             ResumeLayout(false);

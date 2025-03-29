@@ -1,5 +1,5 @@
-﻿using RentalEquipmentManagementLogic;
-using RentalEquipmentManagementLogic.Models;
+﻿using RentalEquipmentManagementLogic.Models;
+using RentalEquipmentManagementLogic;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,19 +12,18 @@ using System.Windows.Forms;
 
 namespace RentalEquipmentManagementApp
 {
-    public partial class RentalRequestsForm : Form
+    public partial class RentalTransactionForm : Form
     {
         private readonly UserDto _currentUser;
         private readonly EquipmentRentalDBContext _context;
-        public RentalRequestsForm(UserDto currentUser)
+        public RentalTransactionForm(UserDto currentUser)
         {
             InitializeComponent();
-            
             _currentUser = currentUser;
             _context = new EquipmentRentalDBContext();
         }
 
-        private void RentalRequestsForm_Load(object sender, EventArgs e)
+        private void RentalTransactionForm_Load(object sender, EventArgs e)
         {
 
         }
