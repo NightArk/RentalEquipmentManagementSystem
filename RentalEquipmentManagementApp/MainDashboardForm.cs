@@ -24,19 +24,16 @@ namespace RentalEquipmentManagementApp
             InitializeComponent();
             _currentUser = currentUser;
             _context = new EquipmentRentalDBContext();
-            InitializeUI();
+           
             this.StartPosition = FormStartPosition.CenterScreen; // Center the form on the screen
         }
 
 
         private void MainDashboardForm_Load(object sender, EventArgs e)
         {
-
-        }
-        private void InitializeUI()
-        {
             lblWelcome.Text = $"Welcome, {_currentUser.Name}!";
         }
+        
 
         private void btnLogout_Click(object sender, EventArgs e)
         {
