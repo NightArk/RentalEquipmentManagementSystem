@@ -27,5 +27,11 @@ namespace RentalEquipmentManagementApp
         {
 
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            new MainDashboardForm(_currentUser).Show();
+            this.Hide();
+        }
     }
 }
