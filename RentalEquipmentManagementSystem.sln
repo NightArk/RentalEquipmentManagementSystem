@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35506.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RentalEquipmentManagementLogic", "RentalEquipmentManagementLogic\RentalEquipmentManagementLogic.csproj", "{47313130-C905-4DA6-A321-1F853AFCF0D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RentalEquipmentManagementApp", "RentalEquipmentManagementApp\RentalEquipmentManagementApp.csproj", "{503304AA-CE01-4C99-ABD5-75A9E32893C8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D883B3F1-18DA-418A-997B-B72842C3BE1A}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{47313130-C905-4DA6-A321-1F853AFCF0D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47313130-C905-4DA6-A321-1F853AFCF0D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47313130-C905-4DA6-A321-1F853AFCF0D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47313130-C905-4DA6-A321-1F853AFCF0D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{503304AA-CE01-4C99-ABD5-75A9E32893C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{503304AA-CE01-4C99-ABD5-75A9E32893C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{503304AA-CE01-4C99-ABD5-75A9E32893C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{503304AA-CE01-4C99-ABD5-75A9E32893C8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
