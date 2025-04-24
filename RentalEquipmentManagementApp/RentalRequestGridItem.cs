@@ -8,6 +8,7 @@ namespace RentalEquipmentManagementApp
 {
     public class RentalRequestGridItem
     {
+        //something
         public int Id { get; set; }
         public string Customer { get; set; }
         public string Equipment { get; set; }
