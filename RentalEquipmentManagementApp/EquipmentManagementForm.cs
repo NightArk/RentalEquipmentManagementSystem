@@ -21,11 +21,19 @@ namespace RentalEquipmentManagementApp
             InitializeComponent();
             _currentUser = currentUser;
             _context = new EquipmentRentalDBContext();
+
+            this.StartPosition = FormStartPosition.CenterScreen; // Center the form on the screen
         }
 
         private void EquipmentManagementForm_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            new MainDashboardForm(_currentUser).Show();
+            this.Hide();
         }
     }
 }

@@ -88,7 +88,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(248, 33);
+            label2.Location = new Point(241, 31);
             label2.Name = "label2";
             label2.Size = new Size(132, 20);
             label2.TabIndex = 2;
@@ -104,7 +104,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(30, 35);
+            label1.Location = new Point(34, 33);
             label1.Name = "label1";
             label1.Size = new Size(84, 20);
             label1.TabIndex = 0;
@@ -112,7 +112,7 @@
             // 
             // btnClose
             // 
-            btnClose.Location = new Point(763, 625);
+            btnClose.Location = new Point(993, 625);
             btnClose.Name = "btnClose";
             btnClose.Size = new Size(103, 56);
             btnClose.TabIndex = 1;

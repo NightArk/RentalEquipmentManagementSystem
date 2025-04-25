@@ -21,6 +21,8 @@ namespace RentalEquipmentManagementApp
             InitializeComponent();
             _currentUser = currentUser;
             _context = new EquipmentRentalDBContext();
+
+            this.StartPosition = FormStartPosition.CenterScreen; // Center the form on the screen
         }
 
         private void RentalTransactionForm_Load(object sender, EventArgs e)

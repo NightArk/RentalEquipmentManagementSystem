@@ -29,6 +29,7 @@ namespace RentalEquipmentManagementApp
             _context = new EquipmentRentalDBContext();
             _authService = new AuthService(_context);
 
+            this.StartPosition = FormStartPosition.CenterScreen; // Center the form on the screen
         }
 
         private void ReftereshData()
