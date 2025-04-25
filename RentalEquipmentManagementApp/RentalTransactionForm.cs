@@ -18,7 +18,7 @@ namespace RentalEquipmentManagementApp
         private readonly AuthService _authService;
         private readonly UserDto _currentUser;
         private readonly EquipmentRentalDBContext _context;
-        
+
         private DateTimePicker dtpStart = new DateTimePicker();
         private DateTimePicker dtpReturn = new DateTimePicker();
         private Rectangle _dtpRectangle;
@@ -67,7 +67,7 @@ namespace RentalEquipmentManagementApp
 
         private void DgvTransaction_CellClick(object? sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0)
+            if (e.RowIndex >= 0 && e.ColumnIndex >= 0 && e.ColumnIndex < dgvTransaction.Columns.Count)
             {
                 var cell = dgvTransaction.Rows[e.RowIndex].Cells[e.ColumnIndex];
                 string column = dgvTransaction.Columns[e.ColumnIndex].Name;
@@ -413,6 +413,45 @@ namespace RentalEquipmentManagementApp
             }
         }
 
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            if (dgvTransaction.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a transaction to delete.");
+                return;
+            }
 
+            var row = dgvTransaction.SelectedRows[0];
+            int transactionId = Convert.ToInt32(row.Cells["Id"].Value);
+
+            var confirm = MessageBox.Show($"Are you sure you want to delete transaction ID {transactionId}?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            if (confirm == DialogResult.Yes)
+            {
+                var transaction = _context.RentalTransactions.FirstOrDefault(t => t.Id == transactionId);
+
+                if (transaction != null)
+                {
+                    var relatedDocs = _context.Documents.Where(d => d.RentalTransactionId == transactionId).ToList();
+                    _context.Documents.RemoveRange(relatedDocs);
+
+                    _context.RentalTransactions.Remove(transaction);
+                    _context.SaveChanges();
+
+                    _authService.LogAccess(
+                        _currentUser.Id,
+                        "Deleted Rental Transaction",
+                        $"Transaction ID {transactionId}"
+                    );
+
+                    MessageBox.Show("Transaction deleted successfully.");
+                    LoadTransactionData();
+                } else
+                {
+                    MessageBox.Show("Transaction not found.");
+                }
+            }
+
+        }
     }
 }
