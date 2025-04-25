@@ -31,13 +31,20 @@
             btnClose = new Button();
             btnUpdate = new Button();
             groupBox1 = new GroupBox();
-            dgvTransaction = new DataGridView();
-            label1 = new Label();
-            label2 = new Label();
-            txtFilterID = new TextBox();
+            chkEnableStartDateFilter = new CheckBox();
+            dtpTo = new DateTimePicker();
+            dtpFrom = new DateTimePicker();
             ddFilterStatus = new ComboBox();
-            btnResetFilter = new Button();
+            ddFilterCustomer = new ComboBox();
+            label4 = new Label();
+            label3 = new Label();
             btnFilter = new Button();
+            ddFilterEquipment = new ComboBox();
+            btnResetFilter = new Button();
+            txtFilterID = new TextBox();
+            label2 = new Label();
+            label1 = new Label();
+            dgvTransaction = new DataGridView();
             btnDelete = new Button();
             btnAdd = new Button();
             groupBox1.SuspendLayout();
@@ -62,21 +69,146 @@
             btnUpdate.TabIndex = 1;
             btnUpdate.Text = "Update";
             btnUpdate.UseVisualStyleBackColor = true;
+            btnUpdate.Click += btnUpdate_Click;
             // 
             // groupBox1
             // 
-            groupBox1.Controls.Add(btnFilter);
+            groupBox1.Controls.Add(chkEnableStartDateFilter);
+            groupBox1.Controls.Add(dtpTo);
+            groupBox1.Controls.Add(dtpFrom);
             groupBox1.Controls.Add(ddFilterStatus);
+            groupBox1.Controls.Add(ddFilterCustomer);
+            groupBox1.Controls.Add(label4);
+            groupBox1.Controls.Add(label3);
+            groupBox1.Controls.Add(btnFilter);
+            groupBox1.Controls.Add(ddFilterEquipment);
             groupBox1.Controls.Add(btnResetFilter);
             groupBox1.Controls.Add(txtFilterID);
             groupBox1.Controls.Add(label2);
             groupBox1.Controls.Add(label1);
             groupBox1.Location = new Point(27, 17);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(839, 81);
+            groupBox1.Size = new Size(1069, 92);
             groupBox1.TabIndex = 2;
             groupBox1.TabStop = false;
             groupBox1.Text = "groupBox1";
+            // 
+            // chkEnableStartDateFilter
+            // 
+            chkEnableStartDateFilter.AutoSize = true;
+            chkEnableStartDateFilter.Location = new Point(646, 26);
+            chkEnableStartDateFilter.Name = "chkEnableStartDateFilter";
+            chkEnableStartDateFilter.Size = new Size(165, 24);
+            chkEnableStartDateFilter.TabIndex = 13;
+            chkEnableStartDateFilter.Text = "Start date (from/to):";
+            chkEnableStartDateFilter.UseVisualStyleBackColor = true;
+            // 
+            // dtpTo
+            // 
+            dtpTo.Location = new Point(781, 56);
+            dtpTo.Name = "dtpTo";
+            dtpTo.Size = new Size(129, 27);
+            dtpTo.TabIndex = 12;
+            dtpTo.ValueChanged += dtpTo_ValueChanged;
+            // 
+            // dtpFrom
+            // 
+            dtpFrom.Location = new Point(646, 56);
+            dtpFrom.Name = "dtpFrom";
+            dtpFrom.Size = new Size(129, 27);
+            dtpFrom.TabIndex = 11;
+            dtpFrom.ValueChanged += dtpFrom_ValueChanged;
+            // 
+            // ddFilterStatus
+            // 
+            ddFilterStatus.FormattingEnabled = true;
+            ddFilterStatus.Location = new Point(478, 55);
+            ddFilterStatus.Name = "ddFilterStatus";
+            ddFilterStatus.Size = new Size(151, 28);
+            ddFilterStatus.TabIndex = 10;
+            ddFilterStatus.SelectedIndexChanged += ddFilterStatus_SelectedIndexChanged;
+            // 
+            // ddFilterCustomer
+            // 
+            ddFilterCustomer.FormattingEnabled = true;
+            ddFilterCustomer.Location = new Point(478, 21);
+            ddFilterCustomer.Name = "ddFilterCustomer";
+            ddFilterCustomer.Size = new Size(151, 28);
+            ddFilterCustomer.TabIndex = 9;
+            ddFilterCustomer.SelectedIndexChanged += ddFilterCustomer_SelectedIndexChanged;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new Point(340, 55);
+            label4.Name = "label4";
+            label4.Size = new Size(110, 20);
+            label4.TabIndex = 7;
+            label4.Text = "Payment status:";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(16, 50);
+            label3.Name = "label3";
+            label3.Size = new Size(125, 20);
+            label3.TabIndex = 6;
+            label3.Text = "Equipment name:";
+            // 
+            // btnFilter
+            // 
+            btnFilter.Location = new Point(940, 18);
+            btnFilter.Name = "btnFilter";
+            btnFilter.Size = new Size(86, 31);
+            btnFilter.TabIndex = 5;
+            btnFilter.Text = "Filter";
+            btnFilter.UseVisualStyleBackColor = true;
+            btnFilter.Click += btnFilter_Click;
+            // 
+            // ddFilterEquipment
+            // 
+            ddFilterEquipment.FormattingEnabled = true;
+            ddFilterEquipment.Location = new Point(183, 52);
+            ddFilterEquipment.Name = "ddFilterEquipment";
+            ddFilterEquipment.Size = new Size(151, 28);
+            ddFilterEquipment.TabIndex = 3;
+            ddFilterEquipment.SelectedIndexChanged += ddFilterEquipment_SelectedIndexChanged;
+            // 
+            // btnResetFilter
+            // 
+            btnResetFilter.Location = new Point(940, 55);
+            btnResetFilter.Name = "btnResetFilter";
+            btnResetFilter.Size = new Size(123, 31);
+            btnResetFilter.TabIndex = 4;
+            btnResetFilter.Text = "Reset Filter";
+            btnResetFilter.UseVisualStyleBackColor = true;
+            btnResetFilter.Click += btnResetFilter_Click;
+            // 
+            // txtFilterID
+            // 
+            txtFilterID.Location = new Point(183, 17);
+            txtFilterID.Name = "txtFilterID";
+            txtFilterID.Size = new Size(75, 27);
+            txtFilterID.TabIndex = 2;
+            txtFilterID.TextChanged += txtFilterID_TextChanged;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(340, 24);
+            label2.Name = "label2";
+            label2.Size = new Size(132, 20);
+            label2.TabIndex = 1;
+            label2.Text = "Filter by Customer:";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(16, 24);
+            label1.Name = "label1";
+            label1.Size = new Size(84, 20);
+            label1.TabIndex = 0;
+            label1.Text = "Filter by ID:";
             // 
             // dgvTransaction
             // 
@@ -88,57 +220,8 @@
             dgvTransaction.RowHeadersWidth = 51;
             dgvTransaction.Size = new Size(1069, 501);
             dgvTransaction.TabIndex = 3;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(34, 33);
-            label1.Name = "label1";
-            label1.Size = new Size(84, 20);
-            label1.TabIndex = 0;
-            label1.Text = "Filter by ID:";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(241, 31);
-            label2.Name = "label2";
-            label2.Size = new Size(132, 20);
-            label2.TabIndex = 1;
-            label2.Text = "Filter by Customer:";
-            // 
-            // txtFilterID
-            // 
-            txtFilterID.Location = new Point(147, 29);
-            txtFilterID.Name = "txtFilterID";
-            txtFilterID.Size = new Size(75, 27);
-            txtFilterID.TabIndex = 2;
-            // 
-            // ddFilterStatus
-            // 
-            ddFilterStatus.FormattingEnabled = true;
-            ddFilterStatus.Location = new Point(377, 29);
-            ddFilterStatus.Name = "ddFilterStatus";
-            ddFilterStatus.Size = new Size(201, 28);
-            ddFilterStatus.TabIndex = 3;
-            // 
-            // btnResetFilter
-            // 
-            btnResetFilter.Location = new Point(690, 27);
-            btnResetFilter.Name = "btnResetFilter";
-            btnResetFilter.Size = new Size(123, 31);
-            btnResetFilter.TabIndex = 4;
-            btnResetFilter.Text = "Reset Filter";
-            btnResetFilter.UseVisualStyleBackColor = true;
-            // 
-            // btnFilter
-            // 
-            btnFilter.Location = new Point(598, 27);
-            btnFilter.Name = "btnFilter";
-            btnFilter.Size = new Size(86, 31);
-            btnFilter.TabIndex = 5;
-            btnFilter.Text = "Filter";
-            btnFilter.UseVisualStyleBackColor = true;
+            dgvTransaction.CellContentClick += dgvTransaction_CellContentClick;
+            dgvTransaction.DataBindingComplete += dgvTransaction_DataBindingComplete;
             // 
             // btnDelete
             // 
@@ -187,10 +270,17 @@
         private Label label2;
         private Label label1;
         private TextBox txtFilterID;
-        private ComboBox ddFilterStatus;
+        private ComboBox ddFilterEquipment;
         private Button btnResetFilter;
         private Button btnFilter;
         private Button btnDelete;
         private Button btnAdd;
+        private DateTimePicker dtpTo;
+        private DateTimePicker dtpFrom;
+        private ComboBox ddFilterStatus;
+        private ComboBox ddFilterCustomer;
+        private Label label4;
+        private Label label3;
+        private CheckBox chkEnableStartDateFilter;
     }
 }
