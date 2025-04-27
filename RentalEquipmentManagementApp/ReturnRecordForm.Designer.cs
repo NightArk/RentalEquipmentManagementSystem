@@ -32,9 +32,16 @@
             btnUpdate = new Button();
             btnClose = new Button();
             groupBox1 = new GroupBox();
+            chkEnableDateFilter = new CheckBox();
+            dtpFilterTo = new DateTimePicker();
+            dtpFilterFrom = new DateTimePicker();
+            cbFilterCondition = new ComboBox();
+            cbFilterEquipment = new ComboBox();
+            cbFilterCustomer = new ComboBox();
+            label3 = new Label();
+            label4 = new Label();
             btnResetFilter = new Button();
             btnFilter = new Button();
-            ddFilterEquipment = new ComboBox();
             label2 = new Label();
             txtFilterID = new TextBox();
             label1 = new Label();
@@ -54,6 +61,8 @@
             dgvReturnRecord.RowHeadersWidth = 51;
             dgvReturnRecord.Size = new Size(1069, 501);
             dgvReturnRecord.TabIndex = 0;
+            dgvReturnRecord.CellClick += dgvReturnRecord_CellClick;
+            dgvReturnRecord.DataBindingComplete += dgvReturnRecord_DataBindingComplete;
             // 
             // btnUpdate
             // 
@@ -63,6 +72,7 @@
             btnUpdate.TabIndex = 4;
             btnUpdate.Text = "Update";
             btnUpdate.UseVisualStyleBackColor = true;
+            btnUpdate.Click += btnUpdate_Click;
             // 
             // btnClose
             // 
@@ -76,9 +86,16 @@
             // 
             // groupBox1
             // 
+            groupBox1.Controls.Add(chkEnableDateFilter);
+            groupBox1.Controls.Add(dtpFilterTo);
+            groupBox1.Controls.Add(dtpFilterFrom);
+            groupBox1.Controls.Add(cbFilterCondition);
+            groupBox1.Controls.Add(cbFilterEquipment);
+            groupBox1.Controls.Add(cbFilterCustomer);
+            groupBox1.Controls.Add(label3);
+            groupBox1.Controls.Add(label4);
             groupBox1.Controls.Add(btnResetFilter);
             groupBox1.Controls.Add(btnFilter);
-            groupBox1.Controls.Add(ddFilterEquipment);
             groupBox1.Controls.Add(label2);
             groupBox1.Controls.Add(txtFilterID);
             groupBox1.Controls.Add(label1);
@@ -89,44 +106,104 @@
             groupBox1.TabStop = false;
             groupBox1.Text = "groupBox1";
             // 
+            // chkEnableDateFilter
+            // 
+            chkEnableDateFilter.AutoSize = true;
+            chkEnableDateFilter.Location = new Point(619, 21);
+            chkEnableDateFilter.Name = "chkEnableDateFilter";
+            chkEnableDateFilter.Size = new Size(179, 24);
+            chkEnableDateFilter.TabIndex = 16;
+            chkEnableDateFilter.Text = "Return Date (from/to):";
+            chkEnableDateFilter.UseVisualStyleBackColor = true;
+            // 
+            // dtpFilterTo
+            // 
+            dtpFilterTo.Location = new Point(762, 50);
+            dtpFilterTo.Name = "dtpFilterTo";
+            dtpFilterTo.Size = new Size(137, 27);
+            dtpFilterTo.TabIndex = 15;
+            // 
+            // dtpFilterFrom
+            // 
+            dtpFilterFrom.Location = new Point(619, 50);
+            dtpFilterFrom.Name = "dtpFilterFrom";
+            dtpFilterFrom.Size = new Size(137, 27);
+            dtpFilterFrom.TabIndex = 14;
+            // 
+            // cbFilterCondition
+            // 
+            cbFilterCondition.FormattingEnabled = true;
+            cbFilterCondition.Location = new Point(462, 52);
+            cbFilterCondition.Name = "cbFilterCondition";
+            cbFilterCondition.Size = new Size(151, 28);
+            cbFilterCondition.TabIndex = 11;
+            // 
+            // cbFilterEquipment
+            // 
+            cbFilterEquipment.FormattingEnabled = true;
+            cbFilterEquipment.Location = new Point(462, 19);
+            cbFilterEquipment.Name = "cbFilterEquipment";
+            cbFilterEquipment.Size = new Size(151, 28);
+            cbFilterEquipment.TabIndex = 10;
+            // 
+            // cbFilterCustomer
+            // 
+            cbFilterCustomer.FormattingEnabled = true;
+            cbFilterCustomer.Location = new Point(147, 47);
+            cbFilterCustomer.Name = "cbFilterCustomer";
+            cbFilterCustomer.Size = new Size(151, 28);
+            cbFilterCustomer.TabIndex = 9;
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(311, 55);
+            label3.Name = "label3";
+            label3.Size = new Size(124, 20);
+            label3.TabIndex = 8;
+            label3.Text = "Return Condition:";
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new Point(34, 55);
+            label4.Name = "label4";
+            label4.Size = new Size(75, 20);
+            label4.TabIndex = 6;
+            label4.Text = "Customer:";
+            // 
             // btnResetFilter
             // 
-            btnResetFilter.Location = new Point(736, 27);
+            btnResetFilter.Location = new Point(940, 47);
             btnResetFilter.Name = "btnResetFilter";
             btnResetFilter.Size = new Size(123, 31);
             btnResetFilter.TabIndex = 5;
             btnResetFilter.Text = "ResetFilter";
             btnResetFilter.UseVisualStyleBackColor = true;
+            btnResetFilter.Click += btnResetFilter_Click;
             // 
             // btnFilter
             // 
-            btnFilter.Location = new Point(644, 27);
+            btnFilter.Location = new Point(940, 15);
             btnFilter.Name = "btnFilter";
-            btnFilter.Size = new Size(86, 31);
+            btnFilter.Size = new Size(123, 31);
             btnFilter.TabIndex = 4;
             btnFilter.Text = "Filter";
             btnFilter.UseVisualStyleBackColor = true;
-            // 
-            // ddFilterEquipment
-            // 
-            ddFilterEquipment.FormattingEnabled = true;
-            ddFilterEquipment.Location = new Point(392, 29);
-            ddFilterEquipment.Name = "ddFilterEquipment";
-            ddFilterEquipment.Size = new Size(201, 28);
-            ddFilterEquipment.TabIndex = 3;
+            btnFilter.Click += btnFilter_Click_2;
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(241, 31);
+            label2.Location = new Point(311, 21);
             label2.Name = "label2";
-            label2.Size = new Size(145, 20);
+            label2.Size = new Size(84, 20);
             label2.TabIndex = 2;
-            label2.Text = "Filter by Equipment :";
+            label2.Text = "Equipment:";
             // 
             // txtFilterID
             // 
-            txtFilterID.Location = new Point(147, 29);
+            txtFilterID.Location = new Point(147, 18);
             txtFilterID.Name = "txtFilterID";
             txtFilterID.Size = new Size(75, 27);
             txtFilterID.TabIndex = 1;
@@ -134,7 +211,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(34, 33);
+            label1.Location = new Point(34, 22);
             label1.Name = "label1";
             label1.Size = new Size(84, 20);
             label1.TabIndex = 0;
@@ -148,6 +225,7 @@
             btnAdd.TabIndex = 7;
             btnAdd.Text = "Add";
             btnAdd.UseVisualStyleBackColor = true;
+            btnAdd.Click += btnAdd_Click;
             // 
             // btnDelete
             // 
@@ -157,6 +235,7 @@
             btnDelete.TabIndex = 8;
             btnDelete.Text = "Delete";
             btnDelete.UseVisualStyleBackColor = true;
+            btnDelete.Click += btnDelete_Click;
             // 
             // ReturnRecordForm
             // 
@@ -186,11 +265,18 @@
         private GroupBox groupBox1;
         private Button btnResetFilter;
         private Button btnFilter;
-        private ComboBox ddFilterEquipment;
         private Label label2;
         private TextBox txtFilterID;
         private Label label1;
         private Button btnAdd;
         private Button btnDelete;
+        private DateTimePicker dtpFilterTo;
+        private DateTimePicker dtpFilterFrom;
+        private ComboBox cbFilterCondition;
+        private ComboBox cbFilterEquipment;
+        private ComboBox cbFilterCustomer;
+        private Label label3;
+        private Label label4;
+        private CheckBox chkEnableDateFilter;
     }
 }
