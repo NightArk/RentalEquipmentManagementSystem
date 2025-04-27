@@ -448,12 +448,20 @@ namespace RentalEquipmentManagementApp
 
                     MessageBox.Show("Transaction deleted successfully.");
                     LoadTransactionData();
-                } else
+                }
+                else
                 {
                     MessageBox.Show("Transaction not found.");
                 }
             }
 
+        }
+
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            var addForm = new RentalTransactionAdd(_currentUser);
+            addForm.FormClosed += (s, args) => LoadTransactionData();
+            addForm.ShowDialog();
         }
     }
 }
