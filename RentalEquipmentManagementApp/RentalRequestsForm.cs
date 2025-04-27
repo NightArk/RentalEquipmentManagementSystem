@@ -65,6 +65,8 @@ namespace RentalEquipmentManagementApp
                 requests = requests.Where(r => r.Id == Convert.ToInt32(txtFilterID.Text));
 
 
+#pragma warning disable CS8601 // Possible null reference assignment.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             var requestItems = requests.OrderByDescending(m => m.ReturnDate)
                 .Select(r => new RentalRequestGridItem
                 {
@@ -77,6 +79,8 @@ namespace RentalEquipmentManagementApp
                     Status = r.Status,
                     CreatedAt = r.CreatedAt.HasValue ? r.CreatedAt.Value.ToString("dd/MM/yyyy") : ""
                 }).ToList();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8601 // Possible null reference assignment.
 
             dgvRequests.DataSource = requestItems;
         }
@@ -85,7 +89,9 @@ namespace RentalEquipmentManagementApp
         {
             dtp.Visible = false;
             dtp.Format = DateTimePickerFormat.Short;
+#pragma warning disable CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
             dtp.TextChanged += new EventHandler(dtp_OnTextChange);
+#pragma warning restore CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
             dgvRequests.Controls.Add(dtp);
             var customers = _context.Users
                 .Where(u => u.Role == "Customer")
@@ -100,7 +106,9 @@ namespace RentalEquipmentManagementApp
             ddFilterStatus.SelectedIndex = 0;
 
             ReftereshData();
+#pragma warning disable CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
             dgvRequests.CellClick += dgvRequests_CellClick;
+#pragma warning restore CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
             _authService.LogAccess(
                 _currentUser.Id,
                 "Viewed Rental Requests",

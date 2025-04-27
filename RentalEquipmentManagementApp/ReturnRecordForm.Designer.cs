@@ -97,6 +97,7 @@
             btnResetFilter.TabIndex = 5;
             btnResetFilter.Text = "ResetFilter";
             btnResetFilter.UseVisualStyleBackColor = true;
+            btnResetFilter.Click += btnResetFilter_Click;
             // 
             // btnFilter
             // 
@@ -106,6 +107,7 @@
             btnFilter.TabIndex = 4;
             btnFilter.Text = "Filter";
             btnFilter.UseVisualStyleBackColor = true;
+            btnFilter.Click += btnFilter_Click;
             // 
             // ddFilterEquipment
             // 
@@ -157,6 +159,7 @@
             btnDelete.TabIndex = 8;
             btnDelete.Text = "Delete";
             btnDelete.UseVisualStyleBackColor = true;
+            btnDelete.Click += btnDelete_Click;
             // 
             // ReturnRecordForm
             // 
