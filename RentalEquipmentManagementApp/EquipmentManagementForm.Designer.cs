@@ -28,33 +28,33 @@
         /// </summary>
         private void InitializeComponent()
         {
-            dgvTransaction = new DataGridView();
+            dgvEquipmentInformation = new DataGridView();
             btnAdd = new Button();
             btnUpdate = new Button();
             btnClose = new Button();
             groupBox1 = new GroupBox();
+            ddFilterEquipment = new ComboBox();
+            label3 = new Label();
             btnFilter = new Button();
             ddFilterStatus = new ComboBox();
             btnResetFilter = new Button();
             txtFilterID = new TextBox();
             label2 = new Label();
             label1 = new Label();
-            ddFilterEquipment = new ComboBox();
-            label3 = new Label();
-            ((System.ComponentModel.ISupportInitialize)dgvTransaction).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvEquipmentInformation).BeginInit();
             groupBox1.SuspendLayout();
             SuspendLayout();
             // 
-            // dgvTransaction
+            // dgvEquipmentInformation
             // 
-            dgvTransaction.BackgroundColor = Color.White;
-            dgvTransaction.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvTransaction.Location = new Point(27, 107);
-            dgvTransaction.Margin = new Padding(3, 4, 3, 4);
-            dgvTransaction.Name = "dgvTransaction";
-            dgvTransaction.RowHeadersWidth = 51;
-            dgvTransaction.Size = new Size(1069, 501);
-            dgvTransaction.TabIndex = 4;
+            dgvEquipmentInformation.BackgroundColor = Color.White;
+            dgvEquipmentInformation.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvEquipmentInformation.Location = new Point(27, 107);
+            dgvEquipmentInformation.Margin = new Padding(3, 4, 3, 4);
+            dgvEquipmentInformation.Name = "dgvEquipmentInformation";
+            dgvEquipmentInformation.RowHeadersWidth = 51;
+            dgvEquipmentInformation.Size = new Size(1069, 501);
+            dgvEquipmentInformation.TabIndex = 4;
             // 
             // btnAdd
             // 
@@ -64,6 +64,7 @@
             btnAdd.TabIndex = 9;
             btnAdd.Text = "Add ( optional )";
             btnAdd.UseVisualStyleBackColor = true;
+            btnAdd.Click += btnAdd_Click;
             // 
             // btnUpdate
             // 
@@ -73,6 +74,7 @@
             btnUpdate.TabIndex = 7;
             btnUpdate.Text = "Update ( optional )";
             btnUpdate.UseVisualStyleBackColor = true;
+            btnUpdate.Click += btnUpdate_Click;
             // 
             // btnClose
             // 
@@ -101,6 +103,23 @@
             groupBox1.TabStop = false;
             groupBox1.Text = "groupBox1";
             // 
+            // ddFilterEquipment
+            // 
+            ddFilterEquipment.FormattingEnabled = true;
+            ddFilterEquipment.Location = new Point(677, 30);
+            ddFilterEquipment.Name = "ddFilterEquipment";
+            ddFilterEquipment.Size = new Size(118, 28);
+            ddFilterEquipment.TabIndex = 7;
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(516, 33);
+            label3.Name = "label3";
+            label3.Size = new Size(145, 20);
+            label3.TabIndex = 6;
+            label3.Text = "Filter by Equipment :";
+            // 
             // btnFilter
             // 
             btnFilter.Location = new Point(830, 28);
@@ -109,6 +128,7 @@
             btnFilter.TabIndex = 5;
             btnFilter.Text = "Filter";
             btnFilter.UseVisualStyleBackColor = true;
+            btnFilter.Click += btnFilter_Click;
             // 
             // ddFilterStatus
             // 
@@ -126,6 +146,7 @@
             btnResetFilter.TabIndex = 4;
             btnResetFilter.Text = "Reset Filter";
             btnResetFilter.UseVisualStyleBackColor = true;
+            btnResetFilter.Click += btnResetFilter_Click;
             // 
             // txtFilterID
             // 
@@ -152,23 +173,6 @@
             label1.TabIndex = 0;
             label1.Text = "Filter by ID:";
             // 
-            // ddFilterEquipment
-            // 
-            ddFilterEquipment.FormattingEnabled = true;
-            ddFilterEquipment.Location = new Point(677, 30);
-            ddFilterEquipment.Name = "ddFilterEquipment";
-            ddFilterEquipment.Size = new Size(118, 28);
-            ddFilterEquipment.TabIndex = 7;
-            // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.Location = new Point(516, 33);
-            label3.Name = "label3";
-            label3.Size = new Size(145, 20);
-            label3.TabIndex = 6;
-            label3.Text = "Filter by Equipment :";
-            // 
             // EquipmentManagementForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -178,11 +182,11 @@
             Controls.Add(btnAdd);
             Controls.Add(btnUpdate);
             Controls.Add(btnClose);
-            Controls.Add(dgvTransaction);
+            Controls.Add(dgvEquipmentInformation);
             Name = "EquipmentManagementForm";
             Text = "EquipmentManagementForm";
             Load += EquipmentManagementForm_Load;
-            ((System.ComponentModel.ISupportInitialize)dgvTransaction).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvEquipmentInformation).EndInit();
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             ResumeLayout(false);
@@ -190,7 +194,7 @@
 
         #endregion
 
-        private DataGridView dgvTransaction;
+        private DataGridView dgvEquipmentInformation;
         private Button btnAdd;
         private Button btnUpdate;
         private Button btnClose;
