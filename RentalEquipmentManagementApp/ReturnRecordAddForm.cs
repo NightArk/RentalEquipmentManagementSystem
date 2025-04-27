@@ -41,8 +41,11 @@ namespace RentalEquipmentManagementApp
                     EquipmentName = rt.AssignedEquipment.Name
                 }).ToList<dynamic>();
 
+            // Set the data source for the ComboBox
             cbRentalTransaction.DataSource = _rentalList;
-            cbRentalTransaction.DisplayMember = "Id";
+
+            // Display the equipment name instead of the ID
+            cbRentalTransaction.DisplayMember = "EquipmentName";
             cbRentalTransaction.ValueMember = "Id";
             cbRentalTransaction.SelectedIndex = -1;
 
