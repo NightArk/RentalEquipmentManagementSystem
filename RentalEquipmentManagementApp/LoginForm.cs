@@ -44,10 +44,5 @@ namespace RentalEquipmentManagementApp
             _authService.LogAccess(user.Id,"Login","none");
             this.Hide();
         }
-
-        private void LoginForm_Load(object sender, EventArgs e)
-        {
-
-        }
     }
 }
