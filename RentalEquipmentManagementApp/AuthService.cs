@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 
 namespace RentalEquipmentManagementApp
@@ -20,8 +21,14 @@ namespace RentalEquipmentManagementApp
 
         public UserDto? Authenticate(string email, string password)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Name == email && u.PasswordHash == password);
+            var user = _context.Users.FirstOrDefault(u => u.Email == email);
             if (user == null) return null;
+
+            var hasher = new PasswordHasher<User>();
+            var result = hasher.VerifyHashedPassword(user, user.PasswordHash, password);
+
+            if (result == PasswordVerificationResult.Failed)
+                return null;
 
             return new UserDto
             {
