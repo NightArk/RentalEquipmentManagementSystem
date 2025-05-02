@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RentalEquipmentManagementWebApp", "RentalEquipmentManagementWebApp\RentalEquipmentManagementWebApp.csproj", "{CD5FCC69-7AB3-4644-96B1-8973B6CDBFE9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,8 +28,15 @@ Global
 		{503304AA-CE01-4C99-ABD5-75A9E32893C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{503304AA-CE01-4C99-ABD5-75A9E32893C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{503304AA-CE01-4C99-ABD5-75A9E32893C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD5FCC69-7AB3-4644-96B1-8973B6CDBFE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD5FCC69-7AB3-4644-96B1-8973B6CDBFE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD5FCC69-7AB3-4644-96B1-8973B6CDBFE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD5FCC69-7AB3-4644-96B1-8973B6CDBFE9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C02AF31E-1B67-4DC2-A7B7-BDF54174115B}
 	EndGlobalSection
 EndGlobal
