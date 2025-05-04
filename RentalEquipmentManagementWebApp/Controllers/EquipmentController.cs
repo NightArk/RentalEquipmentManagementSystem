@@ -65,8 +65,8 @@ namespace RentalEquipmentManagementWebApp.Controllers
                 new SelectListItem { Value = "", Text = "All Statuses" },
                 new SelectListItem { Value = "Available", Text = "Available" },
                 new SelectListItem { Value = "Rented", Text = "Rented" },
-                new SelectListItem { Value = "Maintenance", Text = "Maintenance" },
-                new SelectListItem { Value = "Damaged", Text = "Damaged" }
+                new SelectListItem { Value = "Under Maintenance", Text = "Under Maintenance" },
+                new SelectListItem { Value = "unavailable", Text = "unavailable" }
             };
 
             // Set selected values for filters
@@ -192,8 +192,8 @@ namespace RentalEquipmentManagementWebApp.Controllers
             {
                 new SelectListItem { Value = "Available", Text = "Available" },
                 new SelectListItem { Value = "Rented", Text = "Rented" },
-                new SelectListItem { Value = "Maintenance", Text = "Maintenance" },
-                new SelectListItem { Value = "Damaged", Text = "Damaged" }
+                new SelectListItem { Value = "Under Maintenance", Text = "Under Maintenance" },
+                new SelectListItem { Value = "unavailable", Text = "unavailable" }
             };
 
             ViewBag.ConditionStatuses = new List<SelectListItem>
@@ -268,8 +268,8 @@ namespace RentalEquipmentManagementWebApp.Controllers
             {
                 new SelectListItem { Value = "Available", Text = "Available" },
                 new SelectListItem { Value = "Rented", Text = "Rented" },
-                new SelectListItem { Value = "Maintenance", Text = "Maintenance" },
-                new SelectListItem { Value = "Damaged", Text = "Damaged" }
+                new SelectListItem { Value = "Under Maintenance", Text = "Under Maintenance" },
+                new SelectListItem { Value = "unavailable", Text = "unavailable" }
             };
 
             ViewBag.ConditionStatuses = new List<SelectListItem>
