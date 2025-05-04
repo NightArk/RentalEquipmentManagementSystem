@@ -1,0 +1,96 @@
+@{
+    ViewData["Title"] = "Contact Us";
+}
+
+<div class="container">
+    <h1 class="mb-4">Contact Us</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="card-title">Get in Touch</h2>
+                    <p class="card-text">
+                        Have questions about our rental equipment or services? We're here to help!
+                        Fill out the form and our team will get back to you as soon as possible.
+                    </p>
+                    
+                    <form>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Your Name</label>
+                            <input type="text" class="form-control" id="name" placeholder="Enter your name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" placeholder="Enter your email">
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Subject</label>
+                            <input type="text" class="form-control" id="subject" placeholder="Enter subject">
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message</label>
+                            <textarea class="form-control" id="message" rows="5" placeholder="Enter your message"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="card-title">Contact Information</h2>
+                    <p class="card-text">
+                        You can reach us through the following channels:
+                    </p>
+                    
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="bi bi-geo-alt-fill text-primary me-2"></i>
+                            <strong>Address:</strong><br>
+                            123 Equipment Street<br>
+                            Rental City, RC 12345<br>
+                            United States
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-telephone-fill text-primary me-2"></i>
+                            <strong>Phone:</strong><br>
+                            +1 (555) 123-4567
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-envelope-fill text-primary me-2"></i>
+                            <strong>Email:</strong><br>
+                            info@rentalequipment.com
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-clock-fill text-primary me-2"></i>
+                            <strong>Business Hours:</strong><br>
+                            Monday - Friday: 8:00 AM - 6:00 PM<br>
+                            Saturday: 9:00 AM - 4:00 PM<br>
+                            Sunday: Closed
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Connect With Us</h2>
+                    <p class="card-text">
+                        Follow us on social media for updates, tips, and special offers:
+                    </p>
+                    
+                    <div class="d-flex justify-content-start">
+                        <a href="#" class="btn btn-outline-primary me-2"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="btn btn-outline-primary me-2"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="btn btn-outline-primary me-2"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="btn btn-outline-primary me-2"><i class="bi bi-linkedin"></i></a>
+                        <a href="#" class="btn btn-outline-primary"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

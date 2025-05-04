@@ -1,0 +1,11 @@
+@{
+    ViewData["Title"] = "Locked Out";
+}
+
+<div class="text-center">
+    <h1 class="text-danger">@ViewData["Title"]</h1>
+    <p class="text-danger">This account has been locked out, please try again later or contact the administrator.</p>
+    <p>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Return to Home</a>
+    </p>
+</div>

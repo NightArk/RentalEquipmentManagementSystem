@@ -1,0 +1,156 @@
+@model IEnumerable<RentalEquipmentManagementLogic.Models.Log>
+@{
+    ViewData["Title"] = "Audit Logs";
+}
+
+<div class="container-fluid">
+    <h1 class="mt-4 mb-4">Audit Logs</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filter Logs</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="startDate" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="startDate" name="startDate" value="@Context.Request.Query["startDate"]">
+                </div>
+                <div class="col-md-3">
+                    <label for="endDate" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="endDate" name="endDate" value="@Context.Request.Query["endDate"]">
+                </div>
+                <div class="col-md-3">
+                    <label for="actionType" class="form-label">Action Type</label>
+                    <select class="form-select" id="actionType" name="actionType">
+                        <option value="">All Actions</option>
+                        @foreach (var action in ViewBag.ActionTypes)
+                        {
+                            if (Context.Request.Query["actionType"] == action)
+                            {
+                                <option value="@action" selected>@action</option>
+                            }
+                            else
+                            {
+                                <option value="@action">@action</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="userId" class="form-label">User</label>
+                    <select class="form-select" id="userId" name="userId">
+                        <option value="">All Users</option>
+                        @foreach (var user in ViewBag.Users)
+                        {
+                            if (Context.Request.Query["userId"] == user.Id.ToString())
+                            {
+                                <option value="@user.Id" selected>@user.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@user.Id">@user.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-12 mt-3">
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <a asp-action="Logs" class="btn btn-secondary">Clear Filters</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Audit Logs</h6>
+            <div class="dropdown no-arrow">
+                <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-download me-1"></i> Export
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-1"></i> Excel</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-text me-1"></i> CSV</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="logsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Action</th>
+                            <th>User</th>
+                            <th>Details</th>
+                            <th>Source</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in Model)
+                        {
+                            <tr>
+                                <td>@log.Id</td>
+                                <td>
+                                    <span class="badge @GetActionBadgeClass(log.Action)">
+                                        @log.Action
+                                    </span>
+                                </td>
+                                <td>@(log.User?.Name ?? "System")</td>
+                                <td>@log.AffectedData</td>
+                                <td>@log.Source</td>
+                                <td>@log.Timestamp?.ToString("g")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#logsTable').DataTable({
+                order: [[5, 'desc']], // Sort by timestamp descending
+                pageLength: 25,
+                language: {
+                    search: "Search logs:",
+                    lengthMenu: "Show _MENU_ logs per page",
+                    info: "Showing _START_ to _END_ of _TOTAL_ logs",
+                    infoEmpty: "Showing 0 to 0 of 0 logs",
+                    infoFiltered: "(filtered from _MAX_ total logs)"
+                }
+            });
+        });
+    </script>
+}
+
+@functions {
+    public string GetActionBadgeClass(string action)
+    {
+        return action switch
+        {
+            "User Login" => "bg-success",
+            "User Logout" => "bg-secondary",
+            "User Registration" => "bg-info",
+            "User Update" => "bg-primary",
+            "Password Reset" => "bg-warning text-dark",
+            "User Deletion" => "bg-danger",
+            "Equipment Creation" => "bg-info",
+            "Equipment Update" => "bg-primary",
+            "Equipment Deletion" => "bg-danger",
+            "Rental Request" => "bg-info",
+            "Rental Approval" => "bg-success",
+            "Rental Rejection" => "bg-danger",
+            "Rental Transaction" => "bg-primary",
+            "Return Record" => "bg-warning text-dark",
+            "Feedback Submission" => "bg-info",
+            _ => "bg-secondary"
+        };
+    }
+}

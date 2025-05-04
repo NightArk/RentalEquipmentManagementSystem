@@ -1,0 +1,89 @@
+@model RentalEquipmentManagementWebApp.Models.Equipment.EquipmentCreateViewModel
+@{
+    ViewData["Title"] = "Create Equipment";
+}
+
+<div class="container-fluid">
+    <h1 class="mt-4 mb-4">Create Equipment</h1>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Equipment Information</h6>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CategoryId" class="form-label"></label>
+                            <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories">
+                                <option value="">-- Select Category --</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="RentalPrice" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="RentalPrice" class="form-control" />
+                            </div>
+                            <span asp-validation-for="RentalPrice" class="text-danger"></span>
+                            <div class="form-text">Price per day</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-1"></i> Back to List
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i> Create
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Guidelines</h6>
+                </div>
+                <div class="card-body">
+                    <p>Please provide the following information to add new equipment to the system:</p>
+                    <ul>
+                        <li><strong>Name:</strong> A clear, descriptive name for the equipment.</li>
+                        <li><strong>Description:</strong> Detailed information about the equipment, including specifications, features, and usage instructions.</li>
+                        <li><strong>Category:</strong> The category that best describes this equipment.</li>
+                        <li><strong>Rental Price:</strong> The daily rental rate for this equipment.</li>
+                    </ul>
+                    <p>All new equipment will be automatically set to:</p>
+                    <ul>
+                        <li><strong>Availability Status:</strong> Available</li>
+                        <li><strong>Condition Status:</strong> Excellent</li>
+                    </ul>
+                    <p>You can update these statuses later if needed.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

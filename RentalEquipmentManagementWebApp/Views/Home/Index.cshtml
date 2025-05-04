@@ -1,0 +1,76 @@
+﻿@model RentalEquipmentManagementWebApp.Models.Home.HomeViewModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="jumbotron bg-light p-5 rounded-3 mb-4">
+    <div class="container">
+        <h1 class="display-4">Rental Equipment Management System</h1>
+        <p class="lead">Your one-stop solution for equipment rental management. Browse our catalog, make rental requests, and manage your rentals with ease.</p>
+        <hr class="my-4">
+        <p>We offer a wide range of equipment for rent, from heavy machinery to power tools and more.</p>
+        <a class="btn btn-primary btn-lg" asp-controller="Equipment" asp-action="Index" role="button">Browse Equipment</a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-boxes display-4 text-primary"></i></h5>
+                <h2 class="card-text">@Model.CategoryCount</h2>
+                <p class="card-text">Equipment Categories</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-tools display-4 text-primary"></i></h5>
+                <h2 class="card-text">@Model.EquipmentCount</h2>
+                <p class="card-text">Total Equipment</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-check-circle display-4 text-primary"></i></h5>
+                <h2 class="card-text">@Model.AvailableEquipmentCount</h2>
+                <p class="card-text">Available for Rent</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="mb-4">Featured Equipment</h2>
+
+<div class="row">
+    @foreach (var item in Model.FeaturedEquipment)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">@item.Name</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">@item.Category?.Name</h6>
+                    <p class="card-text">@item.Description</p>
+                    <p class="card-text"><strong>Price:</strong> $@item.RentalPrice per day</p>
+                    <p class="card-text"><strong>Status:</strong> <span class="badge bg-success">@item.AvailabilityStatus</span></p>
+                </div>
+                <div class="card-footer">
+                    <a asp-controller="Equipment" asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary">View Details</a>
+                    @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Customer"))
+                    {
+                        <a asp-controller="RentalRequest" asp-action="Create" asp-route-equipmentId="@item.Id" class="btn btn-outline-primary">Request Rental</a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <a asp-controller="Equipment" asp-action="Index" class="btn btn-lg btn-outline-primary">View All Equipment</a>
+    </div>
+</div>
