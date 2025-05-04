@@ -1,5 +1,5 @@
 using RentalEquipmentManagementLogic.Models;
-using Equipment = RentalEquipmentManagementLogic.Models.Equipment;
+using Equipment1 = RentalEquipmentManagementLogic.Models.Equipment;
 namespace RentalEquipmentManagementWebApp.Models.Home
 {
     public class HomeViewModel
@@ -7,6 +7,6 @@ namespace RentalEquipmentManagementWebApp.Models.Home
         public int CategoryCount { get; set; }
         public int EquipmentCount { get; set; }
         public int AvailableEquipmentCount { get; set; }
-        public IEnumerable<Equipment> FeaturedEquipment { get; set; } = new List<Equipment>();
+        public IEnumerable<Equipment1> FeaturedEquipment { get; set; } = new List<Equipment1>();
     }
 }

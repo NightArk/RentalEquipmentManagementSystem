@@ -16,7 +16,8 @@ builder.Services.AddDbContext<EquipmentRentalDBContext>(options =>
 
 // Add Identity DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection") ?? 
+                         builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add Identity
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
@@ -29,6 +30,14 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+
+
+// Ensure Identity database is created
+using (var scope = builder.Services.BuildServiceProvider().CreateScope())
+{
+    var identityContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    identityContext.Database.EnsureCreated();
+}
 
 // Add HttpContextAccessor
 builder.Services.AddHttpContextAccessor();

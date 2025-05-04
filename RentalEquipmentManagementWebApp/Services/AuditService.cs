@@ -26,19 +26,21 @@ namespace RentalEquipmentManagementWebApp.Services
                 }
             }
 
+            // Determine the source
+            var source = _httpContextAccessor.HttpContext != null ? "Web" : "Desktop"; // Default to valid values
+
             var log = new Log
             {
                 Action = action,
                 AffectedData = details,
                 UserId = userId,
-                Source = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString(),
+                Source = source, // Ensure this matches the allowed values
                 Timestamp = DateTime.Now
             };
 
             _context.Logs.Add(log);
             await _context.SaveChangesAsync();
         }
-
         public async Task<IEnumerable<Log>> GetLogsAsync(DateTime? startDate = null, DateTime? endDate = null, string? actionType = null, int? userId = null)
         {
             IQueryable<Log> query = _context.Logs.Include(l => l.User);
