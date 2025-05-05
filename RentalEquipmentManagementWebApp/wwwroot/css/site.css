@@ -1,22 +1,116 @@
+/* Global Settings */
 html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    font-size: 14px; /* Base font size */
+    position: relative;
+    min-height: 100%; /* Ensure html is at least the height of the viewport */
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px; /* Height of the footer, prevents content overlap */
+}
+
+/* Button Focus */
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+/* Navbar Styles */
+.navbar {
+    font-size: 20px; /* Default navbar font size */
+    padding: 1rem;
+}
+
+.navbar-nav .nav-item .nav-link {
+    color: #fff; /* Default white text color */
+}
+
+    /* Active and Hover States for Navbar Links */
+    .navbar-nav .nav-item .nav-link.active {
+        color: black !important; /* Active link text color */
+    }
+
+    .navbar-nav .nav-item .nav-link:hover {
+        color: #f8f9fa; /* Lighter color on hover */
+    }
+
+/* Footer Styles */
+.footer {
+    font-size: 18px;
+    padding: 1rem;
+    text-align: center; /* Center footer content */
+    margin-top: auto; /* Push footer to the bottom */
+    background-color: #f8f9fa; /* Optional: Add a background color */
+}
+
+/* Media Queries */
+
+/* Styles for screens 768px and up (tablets and larger) */
+@media (min-width: 768px) {
+    html {
+        font-size: 16px; /* Increase base font size for tablets and larger */
+    }
+
+    .navbar {
+        font-size: 20px; /* Maintain navbar font size */
+        padding: 1rem;
+    }
+
+    .navbar-nav {
+        font-size: 16px; /* Ensure the navbar items are not too large */
+    }
+
+    .footer {
+        font-size: 18px;
+        padding: 1rem;
+    }
+}
+
+/* Styles for small screens (max-width 768px) */
+@media (max-width: 768px) {
+    html {
+        font-size: 15px; /* Slightly reduce the base font size for small screens */
+    }
+
+    .navbar {
+        font-size: 16px; /* Slightly reduce font size for smaller screens */
+        padding: 0.8rem;
+    }
+
+    .footer {
+        font-size: 14px; /* Reduce footer text size */
+        padding: 0.8rem;
+    }
+
+    .navbar-nav {
+        font-size: 14px; /* Smaller font size for navbar items */
+    }
+}
+
+/* Styles for even smaller screens (max-width 480px) */
+@media (max-width: 480px) {
+    html {
+        font-size: 14px; /* Further reduce font size for very small screens */
+    }
+
+    .navbar {
+        font-size: 14px; /* Further reduce font size for very small screens */
+        padding: 0.5rem;
+    }
+
+    .footer {
+        font-size: 12px; /* Smaller footer text for small screens */
+        padding: 0.5rem;
+    }
+
+    .navbar-nav {
+        font-size: 12px; /* Reduce navbar item font size further */
+    }
+}
+
+.space-left {
+    margin-left: 5px;
 }

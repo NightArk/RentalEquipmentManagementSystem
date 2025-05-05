@@ -1,0 +1,44 @@
+﻿@using RentalEquipmentManagementLogic.Models
+@model List<Log>
+@{
+    ViewData["Title"] = "AuditLogs";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>AuditLogs</h1>
+
+
+<div class="container">
+    @if (Model != null && Model.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Log ID</th>
+                    <th scope="col">User</th>
+                    <th scope="col">Action</th>
+                    <th scope="col">Affected Data</th>
+                    <th scope="col">Timestamp</th>
+                    <th scope="col">Source</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model)
+                {
+                    <tr>
+                        <td>@log.Id</td>
+                        <td>@log.User?.Name</td> <!-- Safely access User.Name in case it's null -->
+                        <td>@log.Action</td>
+                        <td>@log.AffectedData</td>
+                        <td>@log.Timestamp</td>
+                        <td>@log.Source</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No logs available.</p>
+    }
+</div>

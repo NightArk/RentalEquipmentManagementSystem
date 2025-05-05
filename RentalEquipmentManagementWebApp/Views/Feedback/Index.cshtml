@@ -1,0 +1,56 @@
+﻿@model IEnumerable<RentalEquipmentManagementWebApp.Models.ViewModels.FeedbackViewModel>
+@{
+    ViewData["Title"] = $"Feedback for {ViewBag.EquipmentName}";
+}
+
+<h1>Feedback for @ViewBag.EquipmentName</h1>
+
+<p>
+    <a asp-controller="Equipment" asp-action="Index" class="btn btn-secondary">Back to Equipment List</a>
+</p>
+
+@if (Model.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Comment</th>
+                <th>Rating</th>
+                <th>Posted At</th>
+                @if (User.IsInRole("Manager") || User.IsInRole("Admin"))
+                {
+                    <th>Actions</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr class="@(User.IsInRole("Manager") || User.IsInRole("Admin") && item.IsHidden ? "table-secondary" : "")">
+                    <td>@item.CustomerName</td>
+                    <td>@item.Comment</td>
+                    <td>@item.Rating</td>
+                    <td>@item.CreatedAt.ToLocalTime()</td>
+                    @if (User.IsInRole("Manager") || User.IsInRole("Admin"))
+                    {
+                        <td>
+                            <a asp-action="Manage" asp-route-equipmentId="@ViewBag.EquipmentId" asp-route-feedbackId="@item.Id" class="btn btn-sm btn-warning">Manage</a>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No feedback available for this equipment yet.</p>
+}
+
+@if (User.Identity.IsAuthenticated)
+{
+    <p>
+        <a asp-action="Create" asp-route-equipmentId="@ViewBag.EquipmentId" class="btn btn-primary">Write Feedback</a>
+    </p>
+}

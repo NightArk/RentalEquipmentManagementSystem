@@ -1,0 +1,67 @@
+﻿@model RentalEquipmentManagementWebApp.Models.ViewModels.CreateReturnRecordViewModel
+
+@{
+    ViewData["Title"] = "Edit Return Record";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Edit Return Record</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="RentalTransactionId" />
+            <div class="form-group">
+                <label asp-for="RentalTransactionId" class="control-label">Rental Transaction Id</label>
+                <input asp-for="RentalTransactionId" class="form-control" readonly />
+                <span asp-validation-for="RentalTransactionId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EquipmentName" class="control-label">Equipment Name</label>
+                <input asp-for="EquipmentName" class="form-control" readonly />
+                <span asp-validation-for="EquipmentName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CustomerName" class="control-label">Customer Name</label>
+                <input asp-for="CustomerName" class="form-control" readonly />
+                <span asp-validation-for="CustomerName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ActualReturnDate" class="control-label">Actual Return Date</label>
+                <input asp-for="ActualReturnDate" class="form-control" type="date" required />
+                <span asp-validation-for="ActualReturnDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ReturnCondition" class="control-label">Return Condition</label>
+                <select asp-for="ReturnCondition" class="form-control" asp-items="Model.ReturnConditions" required>
+                </select>
+                <span asp-validation-for="ReturnCondition" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LateReturnFee" class="control-label">Late Return Fee</label>
+                <input asp-for="LateReturnFee" class="form-control" required />
+                <span asp-validation-for="LateReturnFee" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AdditionalCharges" class="control-label">Additional Charges</label>
+                <input asp-for="AdditionalCharges" class="form-control" required />
+                <span asp-validation-for="AdditionalCharges" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

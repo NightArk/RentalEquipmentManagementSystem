@@ -1,0 +1,77 @@
+﻿@model RentalEquipmentManagementWebApp.Models.ViewModels.ReturnRecordViewModel
+
+
+@{
+    ViewData["Title"] = "Return Record Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Return Record Details</h1>
+
+<div>
+    <h4>ReturnRecord</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            Return Id
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ReturnId)
+        </dd>
+        <dt class="col-sm-2">
+            Rental Transaction Id
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.RentalTransactionId)
+        </dd>
+        <dt class="col-sm-2">
+            Equipment Name
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.EquipmentName)
+        </dd>
+        <dt class="col-sm-2">
+            Customer Name
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.CustomerName)
+        </dd>
+        @if (!string.IsNullOrEmpty(Model.CustomerEmail))
+        {
+            <dt class="col-sm-2">
+                Customer Email
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.CustomerEmail)
+            </dd>
+        }
+        <dt class="col-sm-2">
+            Actual Return Date
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ActualReturnDate)
+        </dd>
+        <dt class="col-sm-2">
+            Return Condition
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ReturnCondition)
+        </dd>
+        <dt class="col-sm-2">
+            Late Return Fee
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.LateReturnFee)
+        </dd>
+        <dt class="col-sm-2">
+            Additional Charges
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AdditionalCharges)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.ReturnId" class="btn btn-primary">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

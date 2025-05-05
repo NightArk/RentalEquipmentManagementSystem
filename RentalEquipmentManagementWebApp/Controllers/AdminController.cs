@@ -1,311 +1,203 @@
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RentalEquipmentManagementLogic.Models;
-using RentalEquipmentManagementWebApp.Models.Admin;
-using RentalEquipmentManagementWebApp.Services;
-using System.Data;
+using System.Security.Claims;
+using RentalEquipmentManagementSystem_WebApplication.Models.ViewModels;
 
 namespace RentalEquipmentManagementWebApp.Controllers
 {
-    [Authorize(Policy = "RequireAdminRole")]
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly EquipmentRentalDBContext _context;
-        private readonly IAuditService _auditService;
+        private readonly PasswordHasher<User> _hasher;
 
-        public AdminController(
-            UserManager<IdentityUser> userManager,
-            RoleManager<IdentityRole> roleManager,
-            EquipmentRentalDBContext context,
-            IAuditService auditService)
+        public AdminController(EquipmentRentalDBContext context)
         {
-            _userManager = userManager;
-            _roleManager = roleManager;
             _context = context;
-            _auditService = auditService;
+            _hasher = new PasswordHasher<User>();
         }
 
-        public async Task<IActionResult> Index()
+        // Action for Admin Dashboard
+
+        public IActionResult Dashboard()
         {
-            var dashboardViewModel = new DashboardViewModel
+            
+            return View();
+        }
+
+
+        public async Task<IActionResult> AuditLogs()
+        {
+
+
+            // Fetch logs from the database, including user details, and order them by Log ID (ascending or descending)
+            var logs = await _context.Logs
+                .Include(l => l.User)  // Assuming Log has a User navigation property
+                .OrderBy(l => l.Id)    // Sort logs by Log ID in ascending order
+                .ToListAsync();
+
+            return View(logs);  // Pass logs to the view
+        }
+
+        public async Task<IActionResult> UserManagement()
+        {
+            var users = await _context.Users.ToListAsync(); // Fetch all users from your database
+            return View(users); // Pass the list of users to the view
+        }
+
+        // GET: Admin/CreateUser
+        public IActionResult CreateUser()
+        {
+            return View(); // Returns the CreateUser.cshtml view
+        }
+
+        // POST: Admin/CreateUser
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateUser(CreateUserViewModel viewModel)
+        {
+            if (ModelState.IsValid)
             {
-                TotalUsers = await _context.Users.CountAsync(),
-                TotalEquipment = await _context.Equipment.CountAsync(),
-                TotalCategories = await _context.Categories.CountAsync(),
-                TotalRentalRequests = await _context.RentalRequests.CountAsync(),
-                TotalRentalTransactions = await _context.RentalTransactions.CountAsync(),
-                TotalReturnRecords = await _context.ReturnRecords.CountAsync(),
-                RecentLogs = await _auditService.GetRecentLogsAsync(10)
-            };
-
-            return View(dashboardViewModel);
-        }
-
-        public async Task<IActionResult> Dashboard()
-        {
-            // Get counts for dashboard
-            var pendingRequests = await _context.RentalRequests.CountAsync(r => r.Status == "Pending");
-            var approvedRequests = await _context.RentalRequests.CountAsync(r => r.Status == "Approved");
-            var rejectedRequests = await _context.RentalRequests.CountAsync(r => r.Status == "Rejected");
-            var completedRequests = await _context.RentalRequests.CountAsync(r => r.Status == "Completed");
-
-            // Get equipment status counts
-            var availableEquipment = await _context.Equipment.CountAsync(e => e.AvailabilityStatus == "Available");
-            var rentedEquipment = await _context.Equipment.CountAsync(e => e.AvailabilityStatus == "Rented");
-            var maintenanceEquipment = await _context.Equipment.CountAsync(e => e.AvailabilityStatus == "Maintenance");
-            var damagedEquipment = await _context.Equipment.CountAsync(e => e.ConditionStatus == "Damaged");
-
-            // Get category distribution
-            var categoryDistribution = await _context.Categories
-                .Select(c => new CategoryStatViewModel
+                var newUser = new User
                 {
-                    CategoryName = c.Name,
-                    EquipmentCount = c.Equipment.Count
-                })
-                .ToListAsync();
+                    Name = viewModel.Name,
+                    Email = viewModel.Email,
+                    Role = viewModel.Role,
+                    CreatedAt = DateTime.UtcNow // Or your desired creation timestamp
+                };
 
-            // Get recent transactions
-            var recentTransactions = await _context.RentalTransactions
-                .Include(rt => rt.Customer)
-                .Include(rt => rt.AssignedEquipment)
-                .OrderByDescending(rt => rt.CreatedAt)
-                .Take(5)
-                .Select(rt => new RecentTransactionViewModel
-                {
-                    Id = rt.Id,
-                    CustomerName = rt.Customer.Name,
-                    EquipmentName = rt.AssignedEquipment.Name,
-                    RentalDate = rt.ActualRentalStartDate,
-                    DueDate = rt.ReturnDate,
-                    PaymentStatus = rt.PaymentStatus ?? "Unknown"
-                })
-                .ToListAsync();
+                // Hash the password
+                newUser.PasswordHash = _hasher.HashPassword(newUser, viewModel.Password);
 
-            // Calculate financial summary
-            var totalRevenue = await _context.RentalTransactions
-                .SumAsync(rt => (decimal)rt.RentalFee);
+                _context.Users.Add(newUser);
+                await _context.SaveChangesAsync();
 
-            var pendingPayments = await _context.RentalTransactions
-                .Where(rt => rt.PaymentStatus == "Pending")
-                .SumAsync(rt => (decimal)rt.RentalFee);
-
-            var additionalCharges = await _context.ReturnRecords
-                .SumAsync(rr => (decimal)(rr.AdditionalCharges + rr.LateReturnFee));
-
-            var dashboardViewModel = new AdminDashboardViewModel
-            {
-                RequestStatusCounts = new Dictionary<string, int>
-                {
-                    { "Pending", pendingRequests },
-                    { "Approved", approvedRequests },
-                    { "Rejected", rejectedRequests },
-                    { "Completed", completedRequests }
-                },
-                EquipmentStatusCounts = new Dictionary<string, int>
-                {
-                    { "Available", availableEquipment },
-                    { "Rented", rentedEquipment },
-                    { "Maintenance", maintenanceEquipment },
-                    { "Damaged", damagedEquipment }
-                },
-                CategoryDistribution = categoryDistribution,
-                RecentTransactions = recentTransactions,
-                FinancialSummary = new FinancialSummaryViewModel
-                {
-                    TotalRevenue = totalRevenue,
-                    PendingPayments = pendingPayments,
-                    AdditionalCharges = additionalCharges
-                }
-            };
-
-            return View(dashboardViewModel);
-        }
-
-        public async Task<IActionResult> Logs(DateTime? startDate = null, DateTime? endDate = null, string? actionType = null, int? userId = null)
-        {
-            ViewBag.ActionTypes = await _context.Logs
-                .Select(l => l.Action)
-                .Distinct()
-                .OrderBy(a => a)
-                .ToListAsync();
-
-            ViewBag.Users = await _context.Users
-                .OrderBy(u => u.Name)
-                .Select(u => new { u.Id, u.Name })
-                .ToListAsync();
-
-            var logs = await _auditService.GetLogsAsync(startDate, endDate, actionType, userId);
-            return View(logs);
-        }
-
-        public async Task<IActionResult> Users()
-        {
-            var users = await _context.Users.ToListAsync();
-            var viewModel = new List<UserManagementViewModel>();
-
-            foreach (var user in users)
-            {
-                var identityUser = await _userManager.FindByEmailAsync(user.Email);
-                var roles = identityUser != null ? await _userManager.GetRolesAsync(identityUser) : new List<string>();
-
-                viewModel.Add(new UserManagementViewModel
-                {
-                    Id = user.Id,
-                    Name = user.Name,
-                    Email = user.Email,
-                    Role = user.Role,
-                    CreatedAt = user.CreatedAt,
-                    IdentityUserId = identityUser?.Id
-                });
+                return RedirectToAction(nameof(UserManagement)); // Redirect to the user list
             }
 
-            ViewBag.Roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
+            // If ModelState is not valid, return the view with validation errors
             return View(viewModel);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> EditUser(int id)
+        // GET: Admin/EditUser/{id}
+        public async Task<IActionResult> EditUser(int? id)
         {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
             var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
 
-            var identityUser = await _userManager.FindByEmailAsync(user.Email);
-            var roles = identityUser != null ? await _userManager.GetRolesAsync(identityUser) : new List<string>();
-
             var viewModel = new EditUserViewModel
             {
                 Id = user.Id,
                 Name = user.Name,
                 Email = user.Email,
-                Role = user.Role,
-                IdentityUserId = identityUser?.Id
+                Role = user.Role
             };
 
-            ViewBag.Roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
             return View(viewModel);
         }
 
+        // POST: Admin/EditUser
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditUser(EditUserViewModel model)
+        public async Task<IActionResult> EditUser(EditUserViewModel viewModel)
         {
-            if (!ModelState.IsValid)
+
+
+            // Remove validation for NewPassword and ConfirmNewPassword if they are empty
+            if (string.IsNullOrEmpty(viewModel.NewPassword) && string.IsNullOrEmpty(viewModel.ConfirmNewPassword))
             {
-                ViewBag.Roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
-                return View(model);
+                ModelState.Remove("NewPassword");
+                ModelState.Remove("ConfirmNewPassword");
+
+            }
+            // If only one password field is filled, add an error
+            else if (!string.IsNullOrEmpty(viewModel.NewPassword) && string.IsNullOrEmpty(viewModel.ConfirmNewPassword))
+            {
+                ModelState.AddModelError("ConfirmNewPassword", "Confirm New Password is required if you enter a new password.");
+            }
+            else if (string.IsNullOrEmpty(viewModel.NewPassword) && !string.IsNullOrEmpty(viewModel.ConfirmNewPassword))
+            {
+                ModelState.AddModelError("NewPassword", "New Password is required if you enter a confirmation password.");
             }
 
-            var user = await _context.Users.FindAsync(model.Id);
+            if (ModelState.IsValid)
+            {
+                var user = await _context.Users.FindAsync(viewModel.Id);
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
+                user.Name = viewModel.Name;
+                user.Email = viewModel.Email;
+                user.Role = viewModel.Role;
+
+                // Update password only if a new one was provided and valid
+                if (!string.IsNullOrEmpty(viewModel.NewPassword) && ModelState.IsValid) // Check ModelState again after potential password errors
+                {
+                   
+                    user.PasswordHash = _hasher.HashPassword(user, viewModel.NewPassword);
+                }
+
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(UserManagement));
+            }
+
+            // If ModelState is not valid, return the view with validation errors
+            return View(viewModel);
+        }
+
+
+        // GET: Admin/UserDetails/{id}
+        public async Task<IActionResult> UserDetails(int? id) // Renamed action to UserDetails
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
 
-            var identityUser = await _userManager.FindByEmailAsync(user.Email);
-            if (identityUser == null)
+            return View(user); // Will look for a view named UserDetails.cshtml by default
+        }
+
+        public async Task<IActionResult> DeleteUser(int? id)
+        {
+            if (id == null)
             {
                 return NotFound();
             }
 
-            // Update user properties
-            user.Name = model.Name;
-            
-            // Only update email if it has changed
-            if (user.Email != model.Email)
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
             {
-                // Update identity user email
-                var setEmailResult = await _userManager.SetEmailAsync(identityUser, model.Email);
-                if (!setEmailResult.Succeeded)
-                {
-                    foreach (var error in setEmailResult.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                    }
-                    ViewBag.Roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
-                    return View(model);
-                }
-
-                var setUserNameResult = await _userManager.SetUserNameAsync(identityUser, model.Email);
-                if (!setUserNameResult.Succeeded)
-                {
-                    foreach (var error in setUserNameResult.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                    }
-                    ViewBag.Roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
-                    return View(model);
-                }
-
-                // Update custom user email
-                user.Email = model.Email;
+                return NotFound();
             }
 
-            // Update role if it has changed
-            if (user.Role != model.Role)
-            {
-                // Remove from current roles
-                var currentRoles = await _userManager.GetRolesAsync(identityUser);
-                await _userManager.RemoveFromRolesAsync(identityUser, currentRoles);
-
-                // Add to new role
-                await _userManager.AddToRoleAsync(identityUser, model.Role);
-
-                // Update custom user role
-                user.Role = model.Role;
-            }
-
-            // Save changes to custom user
-            _context.Update(user);
-            await _context.SaveChangesAsync();
-
-            // Log the user update
-            await _auditService.LogActivityAsync("User Update", $"User {user.Email} was updated by administrator", user.Id);
-
-            // Reset password if requested
-            if (model.ResetPassword)
-            {
-                var newPassword = "Password@123"; // Default password
-                var token = await _userManager.GeneratePasswordResetTokenAsync(identityUser);
-                var resetResult = await _userManager.ResetPasswordAsync(identityUser, token, newPassword);
-
-                if (resetResult.Succeeded)
-                {
-                    // Update custom user password hash
-                    user.PasswordHash = _userManager.PasswordHasher.HashPassword(identityUser, newPassword);
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
-
-                    // Log the password reset
-                    await _auditService.LogActivityAsync("Password Reset", $"Password for user {user.Email} was reset by administrator", user.Id);
-
-                    TempData["StatusMessage"] = $"User updated successfully. Password has been reset to: {newPassword}";
-                }
-                else
-                {
-                    foreach (var error in resetResult.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                    }
-                    ViewBag.Roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
-                    return View(model);
-                }
-            }
-            else
-            {
-                TempData["StatusMessage"] = "User updated successfully.";
-            }
-
-            return RedirectToAction(nameof(Users));
+            return View(user); // Returns the DeleteUser.cshtml view
         }
 
-        [HttpPost]
+        [HttpPost, ActionName("DeleteUser")] // Or [HttpPost] if your form's asp-action is "DeleteUser"
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteUser(int id)
         {
@@ -315,25 +207,10 @@ namespace RentalEquipmentManagementWebApp.Controllers
                 return NotFound();
             }
 
-            var identityUser = await _userManager.FindByEmailAsync(user.Email);
-            if (identityUser != null)
-            {
-                var result = await _userManager.DeleteAsync(identityUser);
-                if (!result.Succeeded)
-                {
-                    TempData["ErrorMessage"] = "Failed to delete the identity user.";
-                    return RedirectToAction(nameof(Users));
-                }
-            }
-
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
-
-            // Log the user deletion
-            await _auditService.LogActivityAsync("User Deletion", $"User {user.Email} was deleted by administrator");
-
-            TempData["StatusMessage"] = "User deleted successfully.";
-            return RedirectToAction(nameof(Users));
+            return RedirectToAction(nameof(UserManagement));
         }
+
     }
 }

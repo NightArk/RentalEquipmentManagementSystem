@@ -1,182 +1,88 @@
-@model IEnumerable<RentalEquipmentManagementLogic.Models.Equipment>
+﻿@model RentalEquipmentManagementWebApp.Models.ViewModels.EquipmentIndexViewModel
+
 @{
-    ViewData["Title"] = "Equipment";
+    ViewData["Title"] = "Equipment List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid">
-    <h1 class="mt-4 mb-4">Equipment</h1>
+<h1>Equipment List</h1>
 
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
+<p>
+    <a asp-action="Create" class="btn btn-success">Create New</a>
+</p>
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">Equipment List</h6>
-            @if (User.IsInRole("Administrator") || User.IsInRole("Manager"))
-            {
-                <a asp-action="Create" class="btn btn-primary">
-                    <i class="bi bi-plus-circle me-1"></i> Add New Equipment
-                </a>
-            }
-        </div>
-        <div class="card-body">
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-4">
-                            <label for="categoryId" class="form-label">Category</label>
-                            <select class="form-select" id="categoryId" name="categoryId">
-                                @foreach (var category in ViewBag.Categories)
-                                {
-                                    if (category.Value == ViewBag.SelectedCategory.ToString())
-                                    {
-                                        <option value="@category.Value" selected>@category.Text</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@category.Value">@category.Text</option>
-                                    }
-                                }
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="availabilityStatus" class="form-label">Availability</label>
-                            <select class="form-select" id="availabilityStatus" name="availabilityStatus">
-                                @foreach (var status in ViewBag.AvailabilityStatuses)
-                                {
-                                    if (status.Value == ViewBag.SelectedAvailability)
-                                    {
-                                        <option value="@status.Value" selected>@status.Text</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@status.Value">@status.Text</option>
-                                    }
-                                }
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="searchString" class="form-label">Search</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="searchString" name="searchString" value="@ViewBag.SearchString" placeholder="Search equipment...">
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="bi bi-search"></i>
-                                </button>
-                                <a asp-action="Index" class="btn btn-secondary">
-                                    <i class="bi bi-x-circle"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="table-responsive">
-                <table class="table table-bordered" id="equipmentTable" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Description</th>
-                            <th>Rental Price</th>
-                            <th>Status</th>
-                            <th>Condition</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td>@item.Name</td>
-                                <td>@item.Category?.Name</td>
-                                <td>@item.Description</td>
-                                <td>$@item.RentalPrice.ToString("F2")</td>
-                                <td>
-                                    <span class="badge @GetAvailabilityBadgeClass(item.AvailabilityStatus)">
-                                        @item.AvailabilityStatus
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge @GetConditionBadgeClass(item.ConditionStatus)">
-                                        @item.ConditionStatus
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">
-                                            <i class="bi bi-info-circle"></i>
-                                        </a>
-                                        @if (User.IsInRole("Administrator") || User.IsInRole("Manager"))
-                                        {
-                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary btn-sm">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </a>
-                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
-                                        }
-                                        @if (User.IsInRole("Customer") && item.AvailabilityStatus == "Available")
-                                        {
-                                            <a asp-controller="RentalRequest" asp-action="Create" asp-route-equipmentId="@item.Id" class="btn btn-success btn-sm">
-                                                <i class="bi bi-cart-plus"></i> Request
-                                            </a>
-                                        }
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<form asp-action="Index" method="get">
+    <div class="form-group">
+        <label for="searchString">Search:</label>
+        <input type="text" class="form-control" id="searchString" name="searchString" value="@Model.SearchString">
     </div>
-</div>
+    <div class="form-group">
+        <label for="availabilityFilter">Filter by Availability:</label>
+        <select class="form-control" id="availabilityFilter" name="availabilityFilter">
+            <option value="">All</option>
+            <option value="Available" selected="@(Model.AvailabilityFilter == "Available")">Available</option>
+            <option value="Unavailable" selected="@(Model.AvailabilityFilter == "Unavailable")">Unavailable</option>
+            <option value="Under Maintenance" selected="@(Model.AvailabilityFilter == "Under Maintenance")">Under Maintenance</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="conditionFilter">Filter by Condition:</label>
+        <select class="form-control" id="conditionFilter" name="conditionFilter">
+            <option value="">All</option>
+            <option value="New" selected="@(Model.ConditionFilter == "New")">New</option>
+            <option value="Good" selected="@(Model.ConditionFilter == "Good")">Good</option>
+            <option value="Damaged" selected="@(Model.ConditionFilter == "Damaged")">Damaged</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="categoryFilter">Filter by Category:</label>
+        <select class="form-control" id="categoryFilter" name="categoryFilter">
+            <option value="">All</option>
+            @foreach (var category in Model.Categories)
+            {
+                <option value="@category.Id" selected="@(Model.CategoryFilter == category.Id)">@category.Name</option>
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Search/Filter</button>
+    <a asp-action="Index" class="btn btn-secondary">Reset</a>
+</form>
 
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-            $('#equipmentTable').DataTable({
-                "paging": true,
-                "ordering": true,
-                "info": true,
-                "responsive": true,
-                "autoWidth": false,
-                "pageLength": 10,
-                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
-            });
-        });
-    </script>
-}
-
-@functions {
-    public string GetAvailabilityBadgeClass(string status)
-    {
-        return status switch
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Equipment.FirstOrDefault().Name)</th>
+            <th>@Html.DisplayNameFor(model => model.Equipment.FirstOrDefault().Description)</th>
+            <th>@Html.DisplayNameFor(model => model.Equipment.FirstOrDefault().Category.Name)</th>
+            <th>@Html.DisplayNameFor(model => model.Equipment.FirstOrDefault().RentalPrice)</th>
+            <th>@Html.DisplayNameFor(model => model.Equipment.FirstOrDefault().AvailabilityStatus)</th>
+            <th>@Html.DisplayNameFor(model => model.Equipment.FirstOrDefault().ConditionStatus)</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Equipment)
         {
-            "Available" => "bg-success",
-            "Rented" => "bg-primary",
-            "Under Maintenance" => "bg-warning text-dark",
-            "Unavailable" => "bg-danger",
-            _ => "bg-secondary"
-        };
-    }
-
-    public string GetConditionBadgeClass(string condition)
-    {
-        return condition switch
-        {
-            "Excellent" => "bg-success",
-            "Good" => "bg-info",
-            "Fair" => "bg-warning text-dark",
-            "Poor" => "bg-danger",
-            "Damaged" => "bg-danger",
-            _ => "bg-secondary"
-        };
-    }
-}
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                <td>@Html.DisplayFor(modelItem => item.Description)</td>
+                <td>@Html.DisplayFor(modelItem => item.Category.Name)</td>
+                <td>@Html.DisplayFor(modelItem => item.RentalPrice)</td>
+                <td>@Html.DisplayFor(modelItem => item.AvailabilityStatus)</td>
+                <td>@Html.DisplayFor(modelItem => item.ConditionStatus)</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    <span>|</span>
+                    <a asp-controller="Feedback" asp-action="Index" asp-route-equipmentId="@item.Id">Feedback</a>
+                    @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                    {
+                        <span>|</span>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                        <span>|</span>
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

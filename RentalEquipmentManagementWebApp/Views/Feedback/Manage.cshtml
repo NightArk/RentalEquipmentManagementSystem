@@ -1,0 +1,72 @@
+﻿@model RentalEquipmentManagementWebApp.Models.ViewModels.FeedbackViewModel
+
+@{
+    ViewData["Title"] = "Manage Feedback Details";
+}
+
+<h1>Manage Feedback Details</h1>
+
+<div>
+    <h4>Feedback</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            Customer
+        </dt>
+        <dd class="col-sm-10">
+            @Model.CustomerName
+        </dd>
+        <dt class="col-sm-2">
+            Equipment
+        </dt>
+        <dd class="col-sm-10">
+            @ViewBag.EquipmentName
+        </dd>
+        <dt class="col-sm-2">
+            Comment
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Comment
+        </dd>
+        <dt class="col-sm-2">
+            Rating
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Rating
+        </dd>
+        <dt class="col-sm-2">
+            Created At
+        </dt>
+        <dd class="col-sm-10">
+            @Model.CreatedAt.ToLocalTime()
+        </dd>
+        <dt class="col-sm-2">
+            Is Hidden
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.IsHidden)
+        </dd>
+    </dl>
+</div>
+
+<div>
+    <form asp-action="Delete" asp-route-id="@Model.Id" asp-route-equipmentId="@ViewBag.EquipmentId" method="post" class="d-inline">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+    @if (!Model.IsHidden)
+    {
+        <form asp-action="Hide" asp-route-id="@Model.Id" asp-route-equipmentId="@ViewBag.EquipmentId" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-warning">Hide</button>
+        </form>
+    }
+    else
+    {
+        <form asp-action="Show" asp-route-id="@Model.Id" asp-route-equipmentId="@ViewBag.EquipmentId" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-success">Show</button>
+        </form>
+    }
+    <a asp-action="Index" asp-route-equipmentId="@ViewBag.EquipmentId" class="btn btn-secondary">Back to List</a>
+</div>

@@ -1,0 +1,33 @@
+﻿@model RentalEquipmentManagementWebApp.Models.ViewModels.UserProfileViewModel
+
+@{
+    ViewData["Title"] = "Your Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Your Profile</h1>
+
+<dl class="row">
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Name)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Name)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Email)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Email)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.NewPassword)
+    </dt>
+    <dd class="col-sm-10">
+        [Hidden for security]
+    </dd>
+</dl>
+
+<div>
+    <a asp-action="Edit" class="btn btn-primary">Update Profile</a>
+</div>

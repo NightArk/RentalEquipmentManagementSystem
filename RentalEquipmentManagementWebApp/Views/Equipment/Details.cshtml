@@ -1,117 +1,66 @@
-@model RentalEquipmentManagementLogic.Models.Equipment
+﻿@model RentalEquipmentManagementLogic.Models.Equipment // Ensure this namespace is correct
+
 @{
-    ViewData["Title"] = "Equipment Details";
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid">
-    <h1 class="mt-4 mb-4">Equipment Details</h1>
+<h1>Details</h1>
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">@Model.Name</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <dl class="row">
-                                <dt class="col-sm-4">Category</dt>
-                                <dd class="col-sm-8">@Model.Category?.Name</dd>
-
-                                <dt class="col-sm-4">Description</dt>
-                                <dd class="col-sm-8">@Model.Description</dd>
-
-                                <dt class="col-sm-4">Rental Price</dt>
-                                <dd class="col-sm-8">$@Model.RentalPrice.ToString("F2") per day</dd>
-                            </dl>
-                        </div>
-                        <div class="col-md-6">
-                            <dl class="row">
-                                <dt class="col-sm-4">Status</dt>
-                                <dd class="col-sm-8">
-                                    <span class="badge @(Model.AvailabilityStatus == "Available" ? "bg-success" : Model.AvailabilityStatus == "Rented" ? "bg-primary" : Model.AvailabilityStatus == "Maintenance" ? "bg-warning text-dark" : "bg-danger")">
-                                        @Model.AvailabilityStatus
-                                    </span>
-                                </dd>
-
-                                <dt class="col-sm-4">Condition</dt>
-                                <dd class="col-sm-8">
-                                    <span class="badge @(Model.ConditionStatus == "Excellent" ? "bg-success" : Model.ConditionStatus == "Good" ? "bg-info" : Model.ConditionStatus == "Fair" ? "bg-warning text-dark" : "bg-danger")">
-                                        @Model.ConditionStatus
-                                    </span>
-                                </dd>
-
-                                <dt class="col-sm-4">Added On</dt>
-                                <dd class="col-sm-8">@Model.CreatedAt?.ToString("d")</dd>
-                            </dl>
-                        </div>
-                    </div>
-
-                    <div class="mt-4">
-                        @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Customer") && Model.AvailabilityStatus == "Available")
-                        {
-                            <a asp-controller="RentalRequest" asp-action="Create" asp-route-equipmentId="@Model.Id" class="btn btn-success">
-                                <i class="bi bi-cart-plus me-1"></i> Request Rental
-                            </a>
-                        }
-                        @if (User.IsInRole("Administrator") || User.IsInRole("Manager"))
-                        {
-                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
-                                <i class="bi bi-pencil-square me-1"></i> Edit
-                            </a>
-                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
-                                <i class="bi bi-trash me-1"></i> Delete
-                            </a>
-                        }
-                        <a asp-action="Index" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left me-1"></i> Back to List
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Feedback & Ratings</h6>
-                </div>
-                <div class="card-body">
-                    @if (Model.Feedbacks != null && Model.Feedbacks.Any())
-                    {
-                        <div class="list-group">
-                            @foreach (var feedback in Model.Feedbacks.OrderByDescending(f => f.CreatedAt))
-                            {
-                                <div class="list-group-item">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h5 class="mb-1">@feedback.User?.Name</h5>
-                                        <small>@feedback.CreatedAt?.ToString("d")</small>
-                                    </div>
-                                    <p class="mb-1">@feedback.Comment</p>
-                                    <small>
-                                        @for (int i = 1; i <= 5; i++)
-                                        {
-                                            if (i <= feedback.Rating)
-                                            {
-                                                <i class="bi bi-star-fill text-warning"></i>
-                                            }
-                                            else
-                                            {
-                                                <i class="bi bi-star text-warning"></i>
-                                            }
-                                        }
-                                    </small>
-                                </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <p class="text-center">No feedback available for this equipment.</p>
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
+<div>
+    <h4>Equipment</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Category.Name)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Category.Name)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.RentalPrice)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.RentalPrice)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AvailabilityStatus)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AvailabilityStatus)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ConditionStatus)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ConditionStatus)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.CreatedAt)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.CreatedAt)
+        </dd>
+    </dl>
 </div>
+<div>
+    @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+    {
+        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary">Edit</a>
+        <span>|</span>
+    }
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div>
+

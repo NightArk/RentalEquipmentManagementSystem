@@ -1,0 +1,74 @@
+﻿@model IEnumerable<RentalEquipmentManagementLogic.Models.Notification>
+
+@{
+    ViewData["Title"] = "Notifications";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var unreadNotifications = Model.Where(n => n.Status == "Unread").ToList();
+    var readNotifications = Model.Where(n => n.Status == "Read").ToList();
+}
+
+<h1>Notifications</h1>
+
+@if (unreadNotifications.Any())
+{
+    <h2>Unread Notifications</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Message</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var notification in unreadNotifications)
+            {
+                <tr>
+                    <td>@notification.MessageContent</td>
+                    <td>@notification.NotificationType</td>
+                    <td>@notification.CreatedAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@notification.Id" class="btn btn-sm btn-info">Show Message</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No New notifications.</p>
+}
+
+@if (readNotifications.Any())
+{
+    <h2 class="mt-4">Read Notifications</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Message</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var notification in readNotifications)
+            {
+                <tr>
+                    <td>@notification.MessageContent</td>
+                    <td>@notification.NotificationType</td>
+                    <td>@notification.CreatedAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@notification.Id" class="btn btn-sm btn-secondary">Show Message</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No read notifications.</p>
+}

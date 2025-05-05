@@ -1,0 +1,44 @@
+﻿@{
+    ViewData["Title"] = "Registration Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: 90vh;">
+    <div class="border rounded p-5 shadow-lg" style="width: 100%; max-width: 550px;">
+        <form asp-action="Register" asp-controller="Authentication" method="post">
+            <h1 class="text-center mb-4">Sign Up</h1>
+
+            <div class="form-floating mb-4">
+                <input type="text" class="form-control" id="floatingName" name="Name" placeholder="Full Name" required>
+                <label for="floatingName">Full Name</label>
+            </div>
+
+            <div class="form-floating mb-4">
+                <input type="email" class="form-control" id="floatingEmail" name="Email" placeholder="name@example.com" required>
+                <label for="floatingEmail">Email address</label>
+            </div>
+
+            <div class="form-floating mb-4">
+                <input type="password" class="form-control" id="floatingPassword" name="Password" placeholder="Password" required>
+                <label for="floatingPassword">Password</label>
+            </div>
+
+            <div class="form-floating mb-4">
+                <input type="password" class="form-control" id="floatingConfirmPassword" name="ConfirmPassword" placeholder="Confirm Password" required>
+                <label for="floatingConfirmPassword">Confirm Password</label>
+            </div>
+
+            <!-- Removed Role Selection Section -->
+
+            <button type="submit" class="btn btn-success w-100">Register</button>
+        </form>
+
+        @if (TempData["RegisterStatus"]?.ToString() == "Error")
+        {
+            <div class="alert alert-danger mt-4 text-center alert-dismissible fade show" role="alert">
+                @TempData["RegisterMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+    </div>
+</div>

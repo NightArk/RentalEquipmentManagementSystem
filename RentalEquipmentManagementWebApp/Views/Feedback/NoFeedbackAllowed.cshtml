@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "Cannot Write Feedback";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Cannot Write Feedback</h1>
+
+<p>
+    @ViewBag.ErrorMessage
+</p>
+
+<div>
+    <a asp-action="Index" asp-route-equipmentId="@ViewBag.EquipmentId">Back to Feedback</a>
+</div>

@@ -1,84 +1,64 @@
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using LogicModels = RentalEquipmentManagementLogic.Models;
-using RentalEquipmentManagementWebApp.Models.Equipment;
-using RentalEquipmentManagementWebApp.Services;
+using RentalEquipmentManagementLogic.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using RentalEquipmentManagementSystem_WebApplication.Models.ViewModels;
 
 namespace RentalEquipmentManagementWebApp.Controllers
 {
+    [Authorize] // Requires authentication for the entire controller by default
     public class EquipmentController : Controller
     {
-        private readonly LogicModels.EquipmentRentalDBContext _context;
-        private readonly IAuditService _auditService;
+        private readonly EquipmentRentalDBContext _context;
 
-        public EquipmentController(LogicModels.EquipmentRentalDBContext context, IAuditService auditService)
+        public EquipmentController(EquipmentRentalDBContext context)
         {
             _context = context;
-            _auditService = auditService;
         }
 
         // GET: Equipment
-        public async Task<IActionResult> Index(int? categoryId, string? searchString, string? availabilityStatus)
+        public async Task<IActionResult> Index(string searchString, string availabilityFilter, string conditionFilter, int? categoryFilter)
         {
-            var equipmentQuery = _context.Equipment
-                .Include(e => e.Category)
-                .AsQueryable();
+            var equipmentQuery = _context.Equipment.Include(e => e.Category).AsQueryable();
 
-            // Apply category filter
-            if (categoryId.HasValue && categoryId > 0)
-            {
-                equipmentQuery = equipmentQuery.Where(e => e.CategoryId == categoryId);
-            }
-
-            // Apply search filter
             if (!string.IsNullOrEmpty(searchString))
             {
-                equipmentQuery = equipmentQuery.Where(e => 
-                    e.Name.Contains(searchString) || 
-                    e.Description.Contains(searchString) ||
-                    e.Category.Name.Contains(searchString));
+                equipmentQuery = equipmentQuery.Where(e => e.Name.Contains(searchString) || e.Description.Contains(searchString));
             }
 
-            // Apply availability filter
-            if (!string.IsNullOrEmpty(availabilityStatus))
+            if (!string.IsNullOrEmpty(availabilityFilter))
             {
-                equipmentQuery = equipmentQuery.Where(e => e.AvailabilityStatus == availabilityStatus);
+                equipmentQuery = equipmentQuery.Where(e => e.AvailabilityStatus == availabilityFilter);
             }
 
-            // Get categories for filter dropdown
-            ViewBag.Categories = await _context.Categories
-                .Select(c => new SelectListItem
-                {
-                    Value = c.Id.ToString(),
-                    Text = c.Name
-                })
-                .ToListAsync();
-
-            // Add "All Categories" option
-            ViewBag.Categories.Insert(0, new SelectListItem { Value = "0", Text = "All Categories" });
-
-            // Get availability statuses for filter dropdown
-            ViewBag.AvailabilityStatuses = new List<SelectListItem>
+            if (!string.IsNullOrEmpty(conditionFilter))
             {
-                new SelectListItem { Value = "", Text = "All Statuses" },
-                new SelectListItem { Value = "Available", Text = "Available" },
-                new SelectListItem { Value = "Rented", Text = "Rented" },
-                new SelectListItem { Value = "Under Maintenance", Text = "Under Maintenance" },
-                new SelectListItem { Value = "unavailable", Text = "unavailable" }
+                equipmentQuery = equipmentQuery.Where(e => e.ConditionStatus == conditionFilter);
+            }
+
+            if (categoryFilter.HasValue)
+            {
+                equipmentQuery = equipmentQuery.Where(e => e.CategoryId == categoryFilter);
+            }
+
+            var viewModel = new EquipmentIndexViewModel
+            {
+                Equipment = await equipmentQuery.ToListAsync(),
+                Categories = await _context.Categories.ToListAsync(),
+                SearchString = searchString,
+                AvailabilityFilter = availabilityFilter,
+                ConditionFilter = conditionFilter,
+                CategoryFilter = categoryFilter
             };
 
-            // Set selected values for filters
-            ViewBag.SelectedCategory = categoryId ?? 0;
-            ViewBag.SearchString = searchString;
-            ViewBag.SelectedAvailability = availabilityStatus ?? "";
-
-            var equipment = await equipmentQuery.ToListAsync();
-            return View(equipment);
+            return View(viewModel);
         }
 
         // GET: Equipment/Details/5
+
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -88,8 +68,6 @@ namespace RentalEquipmentManagementWebApp.Controllers
 
             var equipment = await _context.Equipment
                 .Include(e => e.Category)
-                .Include(e => e.Feedbacks)
-                .ThenInclude(f => f.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (equipment == null)
@@ -101,61 +79,43 @@ namespace RentalEquipmentManagementWebApp.Controllers
         }
 
         // GET: Equipment/Create
-        [Authorize(Policy = "RequireManagerRole")]
+        [Authorize(Roles = "Admin,Manager")] // Only Admins and Managers can create equipment
         public async Task<IActionResult> Create()
         {
-            ViewBag.Categories = await _context.Categories
-                .Select(c => new SelectListItem
-                {
-                    Value = c.Id.ToString(),
-                    Text = c.Name
-                })
-                .ToListAsync();
-
-            return View();
+            var viewModel = new EquipmentCreateViewModel
+            {
+                Categories = await _context.Categories.ToListAsync() // Get the categories for the dropdown
+            };
+            return View(viewModel);
         }
 
         // POST: Equipment/Create
         [HttpPost]
+        [Authorize(Roles = "Admin,Manager")] // Only Admins and Managers can create equipment
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "RequireManagerRole")]
-        public async Task<IActionResult> Create(EquipmentCreateViewModel model)
+        public async Task<IActionResult> Create(EquipmentCreateViewModel viewModel)
         {
-            if (ModelState.IsValid)
-            {
-                var equipment = new LogicModels.Equipment
+            
+                var equipment = new Equipment
                 {
-                    Name = model.Name,
-                    Description = model.Description,
-                    CategoryId = model.CategoryId,
-                    RentalPrice = model.RentalPrice,
-                    AvailabilityStatus = "Available",
-                    ConditionStatus = "Excellent",
-                    CreatedAt = DateTime.Now
+                    Name = viewModel.Name,
+                    Description = viewModel.Description,
+                    CategoryId = viewModel.CategoryId,
+                    RentalPrice = viewModel.RentalPrice,
+                    AvailabilityStatus = viewModel.AvailabilityStatus,
+                    ConditionStatus = viewModel.ConditionStatus,
+                    CreatedAt = DateTime.Now // Set the creation timestamp
                 };
 
-                _context.Add(equipment);
+                _context.Equipment.Add(equipment);
                 await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index)); // Redirect to the equipment list
+            
 
-                // Log the equipment creation
-                await _auditService.LogActivityAsync("Equipment Creation", $"Equipment '{equipment.Name}' was created");
-
-                return RedirectToAction(nameof(Index));
-            }
-
-            ViewBag.Categories = await _context.Categories
-                .Select(c => new SelectListItem
-                {
-                    Value = c.Id.ToString(),
-                    Text = c.Name
-                })
-                .ToListAsync();
-
-            return View(model);
+            
         }
 
-        // GET: Equipment/Edit/5
-        [Authorize(Policy = "RequireManagerRole")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -169,82 +129,52 @@ namespace RentalEquipmentManagementWebApp.Controllers
                 return NotFound();
             }
 
-            var model = new EquipmentEditViewModel
+            var viewModel = new EquipmentCreateViewModel
             {
-                Id = equipment.Id,
                 Name = equipment.Name,
                 Description = equipment.Description,
-                CategoryId = equipment.CategoryId ?? 0,
+                CategoryId = (int)equipment.CategoryId,
                 RentalPrice = equipment.RentalPrice,
                 AvailabilityStatus = equipment.AvailabilityStatus,
-                ConditionStatus = equipment.ConditionStatus
+                ConditionStatus = equipment.ConditionStatus,
+                Categories = await _context.Categories.ToListAsync() 
             };
 
-            ViewBag.Categories = await _context.Categories
-                .Select(c => new SelectListItem
-                {
-                    Value = c.Id.ToString(),
-                    Text = c.Name
-                })
-                .ToListAsync();
-
-            ViewBag.AvailabilityStatuses = new List<SelectListItem>
-            {
-                new SelectListItem { Value = "Available", Text = "Available" },
-                new SelectListItem { Value = "Rented", Text = "Rented" },
-                new SelectListItem { Value = "Under Maintenance", Text = "Under Maintenance" },
-                new SelectListItem { Value = "unavailable", Text = "unavailable" }
-            };
-
-            ViewBag.ConditionStatuses = new List<SelectListItem>
-            {
-                new SelectListItem { Value = "Excellent", Text = "Excellent" },
-                new SelectListItem { Value = "Good", Text = "Good" },
-                new SelectListItem { Value = "Fair", Text = "Fair" },
-                new SelectListItem { Value = "Poor", Text = "Poor" },
-                new SelectListItem { Value = "Damaged", Text = "Damaged" }
-            };
-
-            return View(model);
+          
+            return View(viewModel);
         }
 
         // POST: Equipment/Edit/5
         [HttpPost]
+        [Authorize(Roles = "Admin,Manager")]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "RequireManagerRole")]
-        public async Task<IActionResult> Edit(int id, EquipmentEditViewModel model)
+        public async Task<IActionResult> Edit(int id, EquipmentCreateViewModel viewModel) // Accept EquipmentCreateViewModel
         {
-            if (id != model.Id)
-            {
-                return NotFound();
-            }
+            
+                var equipment = await _context.Equipment.FindAsync(id); // Fetch the existing equipment to update
+                if (equipment == null)
+                {
+                    return NotFound();
+                }
 
-            if (ModelState.IsValid)
-            {
+                // Update the equipment properties from the ViewModel
+                equipment.Name = viewModel.Name;
+                equipment.Description = viewModel.Description;
+                equipment.CategoryId = viewModel.CategoryId;
+                equipment.RentalPrice = viewModel.RentalPrice;
+                equipment.AvailabilityStatus = viewModel.AvailabilityStatus;
+                equipment.ConditionStatus = viewModel.ConditionStatus;
+                // Do not update CreatedAt unless that's the desired behavior
+
                 try
                 {
-                    var equipment = await _context.Equipment.FindAsync(id);
-                    if (equipment == null)
-                    {
-                        return NotFound();
-                    }
-
-                    equipment.Name = model.Name;
-                    equipment.Description = model.Description;
-                    equipment.CategoryId = model.CategoryId;
-                    equipment.RentalPrice = model.RentalPrice;
-                    equipment.AvailabilityStatus = model.AvailabilityStatus;
-                    equipment.ConditionStatus = model.ConditionStatus;
-
-                    _context.Update(equipment);
+                    _context.Equipment.Update(equipment);
                     await _context.SaveChangesAsync();
-
-                    // Log the equipment update
-                    await _auditService.LogActivityAsync("Equipment Update", $"Equipment '{equipment.Name}' was updated");
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!EquipmentExists(model.Id))
+                    if (!EquipmentExists(equipment.Id))
                     {
                         return NotFound();
                     }
@@ -253,39 +183,11 @@ namespace RentalEquipmentManagementWebApp.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
-            }
 
-            ViewBag.Categories = await _context.Categories
-                .Select(c => new SelectListItem
-                {
-                    Value = c.Id.ToString(),
-                    Text = c.Name
-                })
-                .ToListAsync();
-
-            ViewBag.AvailabilityStatuses = new List<SelectListItem>
-            {
-                new SelectListItem { Value = "Available", Text = "Available" },
-                new SelectListItem { Value = "Rented", Text = "Rented" },
-                new SelectListItem { Value = "Under Maintenance", Text = "Under Maintenance" },
-                new SelectListItem { Value = "unavailable", Text = "unavailable" }
-            };
-
-            ViewBag.ConditionStatuses = new List<SelectListItem>
-            {
-                new SelectListItem { Value = "Excellent", Text = "Excellent" },
-                new SelectListItem { Value = "Good", Text = "Good" },
-                new SelectListItem { Value = "Fair", Text = "Fair" },
-                new SelectListItem { Value = "Poor", Text = "Poor" },
-                new SelectListItem { Value = "Damaged", Text = "Damaged" }
-            };
-
-            return View(model);
         }
 
         // GET: Equipment/Delete/5
-        [Authorize(Policy = "RequireManagerRole")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -293,9 +195,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
                 return NotFound();
             }
 
-            var equipment = await _context.Equipment
-                .Include(e => e.Category)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var equipment = await _context.Equipment.FindAsync(id);
             if (equipment == null)
             {
                 return NotFound();
@@ -305,33 +205,17 @@ namespace RentalEquipmentManagementWebApp.Controllers
         }
 
         // POST: Equipment/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
+        [Authorize(Roles = "Admin,Manager")]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "RequireManagerRole")]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var equipment = await _context.Equipment.FindAsync(id);
-            if (equipment == null)
+            if (equipment != null)
             {
-                return NotFound();
+                _context.Equipment.Remove(equipment);
+                await _context.SaveChangesAsync();
             }
-
-            // Check if equipment is in use
-            var hasRentalRequests = await _context.RentalRequests.AnyAsync(r => r.EquipmentId == id);
-            var hasRentalTransactions = await _context.RentalTransactions.AnyAsync(r => r.AssignedEquipmentId == id);
-
-            if (hasRentalRequests || hasRentalTransactions)
-            {
-                TempData["ErrorMessage"] = "Cannot delete equipment that is associated with rental requests or transactions.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            _context.Equipment.Remove(equipment);
-            await _context.SaveChangesAsync();
-
-            // Log the equipment deletion
-            await _auditService.LogActivityAsync("Equipment Deletion", $"Equipment '{equipment.Name}' was deleted");
-
             return RedirectToAction(nameof(Index));
         }
 

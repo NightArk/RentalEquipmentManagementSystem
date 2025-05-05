@@ -1,0 +1,101 @@
+﻿@model RentalEquipmentManagementWebApp.Models.ViewModels.CreateReturnRecordViewModel
+
+@{
+    ViewData["Title"] = "Create Return Record";
+}
+
+<h1>Create Return Record</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="RentalTransactionId" class="control-label">Rental Transaction Id</label>
+                <select asp-for="RentalTransactionId" id="RentalTransactionId" class="form-control" asp-items="Model.RentalTransactions" required></select>
+                <span asp-validation-for="RentalTransactionId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CustomerName" class="control-label">Customer Name</label>
+                <input asp-for="CustomerName" id="CustomerName" class="form-control" readonly required />
+                <span asp-validation-for="CustomerName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EquipmentName" class="control-label">Equipment Name</label>
+                <input asp-for="EquipmentName" id="EquipmentName" class="form-control" readonly required />
+                <span asp-validation-for="EquipmentName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ActualReturnDate" class="control-label">Actual Return Date</label>
+                <input asp-for="ActualReturnDate" class="form-control" type="date" required />
+                <span asp-validation-for="ActualReturnDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ReturnCondition" class="control-label">Return Condition</label>
+                <select asp-for="ReturnCondition" class="form-control" asp-items="Model.ReturnConditions" required></select>
+                <span asp-validation-for="ReturnCondition" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LateReturnFee" class="control-label">Late Return Fee</label>
+                <input asp-for="LateReturnFee" class="form-control" required />
+                <span asp-validation-for="LateReturnFee" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AdditionalCharges" class="control-label">Additional Charges</label>
+                <input asp-for="AdditionalCharges" class="form-control" required />
+                <span asp-validation-for="AdditionalCharges" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            $("#RentalTransactionId").on("change", function () {
+                var transactionId = $(this).val();
+                if (transactionId) {
+                    $.ajax({
+                        url: '/ReturnRecord/GetTransactionDetails',
+                        type: 'GET',
+                        data: { id: transactionId },
+                        dataType: 'json',
+                        success: function (data) {
+                            if (data) {
+                                $("#EquipmentName").val(data.equipmentName);
+                                $("#CustomerName").val(data.customerName);
+                                $('input[type="submit"]').prop('disabled', false);
+                            } else {
+                                $("#EquipmentName").val('');
+                                $("#CustomerName").val('');
+                                $('input[type="submit"]').prop('disabled', true);
+                            }
+                        }
+                    });
+                } else {
+                    $("#EquipmentName").val('');
+                    $("#CustomerName").val('');
+                    $('input[type="submit"]').prop('disabled', true);
+                }
+            });
+
+            $('input[type="submit"]').prop('disabled', !$("#RentalTransactionId").val()); // Initially disable if no transaction selected
+
+            // Re-enable if there's a pre-selected value on load (though unlikely in Create)
+            if ($("#RentalTransactionId").val()) {
+                $("#RentalTransactionId").trigger("change");
+            }
+        });
+    </script>
+}

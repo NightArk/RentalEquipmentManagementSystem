@@ -1,0 +1,153 @@
+﻿@model RentalEquipmentManagementWebApp.Models.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Dashboard</h1>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Total Active Rentals</h5>
+                <p class="card-text">@Model.TotalActiveRentals</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Total Available Equipment</h5>
+                <p class="card-text">@Model.TotalAvailableEquipment</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Total Equipment</h5>
+                <p class="card-text">@Model.TotalEquipment</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark mb-3">
+            <div class="card-body">
+                <h5 class="card-title">New Pending Requests (Last 7 Days)</h5>
+                <p class="card-text">@Model.NewPendingRequests</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2>Equipment Availability</h2>
+@if (Model.EquipmentAvailability != null && Model.EquipmentAvailability.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.EquipmentAvailability)
+            {
+                <tr>
+                    <td>@item.Status</td>
+                    <td>@item.Count</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No equipment availability data.</p>
+}
+
+<h2>Pending Requests by Category</h2>
+@if (Model.PendingRequestsByCategory != null && Model.PendingRequestsByCategory.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Pending Requests</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.PendingRequestsByCategory)
+            {
+                <tr>
+                    <td>@item.CategoryName</td>
+                    <td>@item.PendingRequestsCount</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No pending requests.</p>
+}
+
+<h2>Damaged Equipment Report</h2>
+@if (Model.DamagedEquipmentReport != null && Model.DamagedEquipmentReport.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Equipment Name</th>
+                <th>Condition</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.DamagedEquipmentReport)
+            {
+                <tr>
+                    <td>@item.EquipmentName</td>
+                    <td>@item.ConditionStatus</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No damaged equipment reported.</p>
+}
+
+<h2>Overdue Rentals</h2>
+@if (Model.OverdueRentals != null && Model.OverdueRentals.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Transaction ID</th>
+                <th>Equipment Name</th>
+                <th>Return Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.OverdueRentals)
+            {
+                <tr>
+                    <td>@item.TransactionId</td>
+                    <td>@item.EquipmentName</td>
+                    <td>@item.ReturnDate.ToShortDateString()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No overdue rentals.</p>
+}
+
+<div class="mt-3">
+    <strong>Average Customer Feedback Rating:</strong> @Model.AverageFeedbackRating.ToString("N2")
+</div>

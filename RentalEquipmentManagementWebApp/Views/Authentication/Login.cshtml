@@ -1,0 +1,33 @@
+﻿@{
+    ViewData["Title"] = "Login Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="border rounded p-5 shadow-sm w-100" style="max-width: 650px;">
+        <form asp-action="Login" asp-controller="Authentication" method="post">
+            <h1 class="text-center mb-4">Sign In</h1>
+
+            <div class="form-floating mb-4">
+                <input type="email" class="form-control" id="floatingInput" name="Email" placeholder="name@example.com" required>
+                <label for="floatingInput">Email address</label>
+            </div>
+
+            <div class="form-floating mb-4">
+                <input type="password" class="form-control" id="floatingPassword" name="Password" placeholder="Password" autocomplete="off" required>
+                <label for="floatingPassword">Password</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+
+        @if (TempData["LoginStatus"]?.ToString() == "Error")
+        {
+            var message = TempData["LoginMessage"]?.ToString();
+            <div class="alert alert-danger alert-dismissible fade show text-center mt-4 w-100" role="alert">
+                <strong>Oh snap!</strong> @message
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+    </div>
+</div>

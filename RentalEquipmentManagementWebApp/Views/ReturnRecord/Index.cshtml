@@ -1,0 +1,87 @@
+﻿@model IEnumerable<RentalEquipmentManagementWebApp.Models.ViewModels.ReturnRecordViewModel>
+@{
+    ViewData["Title"] = "Return Records";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Return Records</h1>
+
+@if (User.IsInRole("Manager") || User.IsInRole("Admin"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Create New</a>
+    </p>
+}
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Return Id
+            </th>
+            <th>
+                Rental Transaction Id
+            </th>
+            <th>
+                Equipment Name
+            </th>
+            <th>
+                Customer Name
+            </th>
+            <th>
+                Actual Return Date
+            </th>
+            <th>
+                Return Condition
+            </th>
+            <th>
+                Late Return Fee
+            </th>
+            <th>
+                Additional Charges
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ReturnId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RentalTransactionId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EquipmentName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CustomerName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ActualReturnDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ReturnCondition)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.LateReturnFee)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AdditionalCharges)
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.ReturnId" class="btn btn-sm btn-info">Details</a>
+                    @if (User.IsInRole("Manager") || User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.ReturnId" class="btn btn-sm btn-primary">Edit</a>
+                    }
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Delete" asp-route-id="@item.ReturnId" class="btn btn-sm btn-danger">Delete</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
