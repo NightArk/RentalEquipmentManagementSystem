@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RentalEquipmentManagementLogic.Models;
 using System.Security.Claims;
-using RentalEquipmentManagementSystem_WebApplication.Models.ViewModels;
+using RentalEquipmentManagementWebApp.Models.ViewModels;
 
 namespace RentalEquipmentManagementWebApp.Controllers
 {

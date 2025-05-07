@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RentalEquipmentManagementLogic.Models;
-using RentalEquipmentManagementSystem_WebApplication.Models.ViewModels;
+using RentalEquipmentManagementWebApp.Models.ViewModels;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;

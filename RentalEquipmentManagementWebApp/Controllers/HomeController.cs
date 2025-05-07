@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using RentalEquipmentManagementSystem_WebApplication.Models;
+using RentalEquipmentManagementWebApp.Models;
 
 namespace RentalEquipmentManagementWebApp.Controllers
 {
