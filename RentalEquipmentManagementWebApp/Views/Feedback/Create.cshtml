@@ -1,42 +1,102 @@
-﻿@model RentalEquipmentManagementWebApp.Models.ViewModels.CreateFeedbackViewModel
+﻿@model RentalEquipmentManagementWebApp.Models.Feedback.CreateFeedbackViewModel
+
 @{
-    ViewData["Title"] = "Write Feedback";
+    ViewData["Title"] = "Submit Feedback";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Write Feedback for @Model.EquipmentName</h1>
+<div class="container-fluid">
+    <h1 class="mt-4 mb-4">Submit Feedback for @Model.EquipmentName</h1>
 
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="EquipmentName" class="control-label">Equipment</label>
-                <input asp-for="EquipmentName" class="form-control" readonly />
-                <input type="hidden" asp-for="EquipmentId" value="@Model.EquipmentId" />
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Feedback Form</h6>
+                </div>
+                <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                    }
+
+                    <form asp-action="Create" method="post" id="feedback-form">
+                        <input type="hidden" asp-for="EquipmentId" />
+                        <input type="hidden" asp-for="EquipmentName" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Comment" class="form-label"></label>
+                            <textarea asp-for="Comment" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Comment" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Rating</label>
+                            <div id="star-rating" class="mb-2">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <i class="bi bi-star rating-star text-secondary" data-value="@i" style="font-size: 1.8rem; cursor: pointer;"></i>
+                                }
+                            </div>
+                            <input type="hidden" asp-for="Rating" id="hidden-rating" />
+                            <span asp-validation-for="Rating" class="text-danger d-block" id="rating-validation"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-controller="Equipment" asp-action="Details" asp-route-id="@Model.EquipmentId" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-1"></i> Back to Equipment
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-send me-1"></i> Submit Feedback
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Comment" class="control-label">Comment</label>
-                <textarea asp-for="Comment" class="form-control"></textarea>
-                <span asp-validation-for="Comment" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Rating" class="control-label">Rating (1-5)</label>
-                <input asp-for="Rating" class="form-control" type="number" min="1" max="5" required />
-                <span asp-validation-for="Rating" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Submit Feedback" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index" asp-route-equipmentId="@Model.EquipmentId">Back to Feedback</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const stars = document.querySelectorAll('.rating-star');
+            const ratingInput = document.getElementById('hidden-rating');
+            const validationMessage = document.getElementById('rating-validation');
+
+            function updateStars(value) {
+                stars.forEach(star => {
+                    const starValue = parseInt(star.getAttribute('data-value'));
+                    if (starValue <= value) {
+                        star.classList.remove('text-secondary');
+                        star.classList.add('text-warning', 'bi-star-fill');
+                        star.classList.remove('bi-star');
+                    } else {
+                        star.classList.remove('text-warning', 'bi-star-fill');
+                        star.classList.add('text-secondary', 'bi-star');
+                    }
+                });
+            }
+
+            stars.forEach(star => {
+                star.addEventListener('click', () => {
+                    const value = parseInt(star.getAttribute('data-value'));
+                    ratingInput.value = value;
+                    updateStars(value);
+                    validationMessage.textContent = '';
+                });
+            });
+
+            document.getElementById('feedback-form').addEventListener('submit', function (e) {
+                if (!ratingInput.value) {
+                    e.preventDefault();
+                    validationMessage.textContent = "Please provide a rating.";
+                }
+            });
+        });
+    </script>
 }

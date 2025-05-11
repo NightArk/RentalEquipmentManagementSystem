@@ -1,78 +1,159 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using RentalEquipmentManagementWebApp.Models.Feedback;
+using RentalEquipmentManagementWebApp.Data;
 using RentalEquipmentManagementLogic.Models;
-using RentalEquipmentManagementWebApp.Models.ViewModels;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 
 namespace RentalEquipmentManagementWebApp.Controllers
 {
     public class FeedbackController : Controller
     {
         private readonly EquipmentRentalDBContext _context;
-    
+        private readonly UserManager<IdentityUser> _userManager;
 
 
-        public FeedbackController(EquipmentRentalDBContext context)
+
+        public FeedbackController(EquipmentRentalDBContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
-        // GET: Feedback/Equipment/{equipmentId}
-        // GET: Feedback/Equipment/{equipmentId}
-        public async Task<IActionResult> Index(int? equipmentId)
+        // GET: Feedback
+        // Controller Action
+
+        public async Task<IActionResult> Index(string searchUserName, int? filterEquipmentId, bool? filterIsHide)
         {
-            if (equipmentId == null)
+            var feedbackQuery = _context.Feedbacks
+                .Include(f => f.User)
+                .Include(f => f.Equipment)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchUserName))
             {
-                return NotFound();
+                feedbackQuery = feedbackQuery.Where(f => f.User.Name.Contains(searchUserName));
+            }
+
+            if (filterEquipmentId.HasValue)
+            {
+                feedbackQuery = feedbackQuery.Where(f => f.EquipmentId == filterEquipmentId);
+            }
+
+            if (filterIsHide.HasValue)
+            {
+                feedbackQuery = feedbackQuery.Where(f => f.IsHide == filterIsHide);
+            }
+
+            var feedbacks = await feedbackQuery
+                .Select(f => new FeedbackViewModel
+                {
+                    Id = f.Id,
+                    UserId = (int)f.UserId,
+                    EquipmentId = (int)f.EquipmentId,
+                    Rating = (int)f.Rating,
+                    Comment = f.Comment,
+                    CreatedAt = (DateTime)f.CreatedAt,
+                    IsHide = f.IsHide,
+                    UserName = f.User.Name,
+                    EquipmentName = f.Equipment.Name
+                })
+                .ToListAsync();
+
+            // Filter dropdown
+            var equipmentList = await _context.Equipment
+                .Select(e => new SelectListItem
+                {
+                    Value = e.Id.ToString(),
+                    Text = e.Name
+                })
+                .ToListAsync();
+
+            equipmentList.Insert(0, new SelectListItem { Value = "", Text = "All Equipment" });
+
+            ViewBag.EquipmentList = equipmentList;
+            ViewBag.SelectedEquipmentId = filterEquipmentId?.ToString() ?? "";
+            ViewBag.UserSearch = searchUserName ?? "";
+
+            return View(feedbacks);
+        }
+
+
+
+
+
+
+        [HttpPost]
+        public async Task<IActionResult> Hide(int id)
+        {
+            var feedback = await _context.Feedbacks.FindAsync(id);
+            if (feedback == null)
+            {
+                TempData["ErrorMessage"] = "Feedback not found.";
+                return RedirectToAction("Index");
+            }
+
+            feedback.IsHide = true;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Show(int id)
+        {
+            var feedback = await _context.Feedbacks.FindAsync(id);
+            if (feedback == null)
+            {
+                TempData["ErrorMessage"] = "Feedback not found.";
+                return RedirectToAction("Index");
+            }
+
+            feedback.IsHide = false;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
+        public async Task<IActionResult> Manage(int equipmentId)
+        {
+
+            if (equipmentId == 0)
+            {
+                TempData["ErrorMessage"] = "Equipment not found.";
+                return RedirectToAction("Index");
             }
 
             var equipment = await _context.Equipment.FindAsync(equipmentId);
             if (equipment == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Equipment not found.";
+                return RedirectToAction("Index");
             }
 
             ViewBag.EquipmentName = equipment.Name;
-            ViewBag.EquipmentId = equipmentId;
 
-            var feedbackQuery = _context.Feedbacks
+            var feedbacks = await _context.Feedbacks
                 .Include(f => f.User)
-                .Where(f => f.EquipmentId == equipmentId);
+                .Where(f => f.EquipmentId == equipmentId)
+                .OrderByDescending(f => f.CreatedAt)
+                .Select(f => new FeedbackViewModel
+                {
+                    Id = f.Id,
+                    UserName = f.User.Name,
+                    Comment = f.Comment,
+                    Rating = (int)f.Rating,
+                    CreatedAt = (DateTime)f.CreatedAt,
+                    IsHide = f.IsHide,
+                    EquipmentName = f.Equipment.Name
+                })
+                .ToListAsync();
 
-            if (!User.IsInRole("Manager") && !User.IsInRole("Admin"))
-            {
-                // If the user is a customer, show only non-hidden feedback
-                feedbackQuery = feedbackQuery.Where(f => !f.IsHidden);
-            }
-
-            var feedbackViewModels = await feedbackQuery.Select(f => new FeedbackViewModel
-            {
-                Id = f.Id,
-                CustomerName = f.User != null ? f.User.Name : string.Empty,
-                Comment = f.Comment,
-                Rating = f.Rating,
-                CreatedAt = (DateTime)f.CreatedAt,
-                IsHidden = f.IsHidden // Pass IsHidden status to the view
-            })
-            .OrderByDescending(vm => vm.CreatedAt)
-            .ToListAsync();
-
-            return View(feedbackViewModels);
-        }
-        private int? GetCurrentUserId()
-        {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return int.TryParse(userIdClaim, out var userId) ? (int?)userId : null;
+            return View(feedbacks);
         }
 
-        private bool IsCurrentUserCustomer()
-        {
-            return User.Claims.Any(c => c.Type == ClaimTypes.Role && c.Value == "Customer");
-        }
 
-        // GET: Feedback/Create/{equipmentId}
         public async Task<IActionResult> Create(int? equipmentId)
         {
             if (equipmentId == null)
@@ -107,132 +188,93 @@ namespace RentalEquipmentManagementWebApp.Controllers
             return View(viewModel);
         }
 
-        // POST: Feedback/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateFeedbackViewModel viewModel)
         {
-            if (ModelState.IsValid)
+            // Manual check for Rating validation
+            if (!viewModel.Rating.HasValue || viewModel.Rating <= 0)
             {
-                var currentUserId = GetCurrentUserId();
-                if (!currentUserId.HasValue)
-                {
-                    return Unauthorized();
-                }
+                ModelState.AddModelError("Rating", "Please provide a rating.");
+            }
 
+            // Remove EquipmentName from ModelState since it's not required
+            ModelState.Remove("EquipmentName");
+
+            if (!ModelState.IsValid)
+            {
+                // If the rating is missing, repopulate the form and return to the same view
+                var equipment = await _context.Equipment.FindAsync(viewModel.EquipmentId);
+                if (equipment != null)
+                {
+                    viewModel.EquipmentName = equipment.Name;
+                }
+                return View(viewModel);
+            }
+
+            var currentUserId = await GetCurrentUserIdAsync();
+            if (!currentUserId.HasValue)
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
                 var feedback = new Feedback
                 {
                     UserId = currentUserId.Value,
                     EquipmentId = viewModel.EquipmentId,
-                    Rating = viewModel.Rating,
+                    Rating = viewModel.Rating.Value,
                     Comment = viewModel.Comment,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    IsHide = false // Default visibility
                 };
 
                 _context.Feedbacks.Add(feedback);
                 await _context.SaveChangesAsync();
 
-                return RedirectToAction("Index", new { equipmentId = viewModel.EquipmentId });
-            }
+                // Add success message
+                TempData["SuccessMessage"] = "Your feedback has been submitted successfully!";
 
-            // Repopulate EquipmentName on error
-            var equipment = await _context.Equipment.FindAsync(viewModel.EquipmentId);
-            if (equipment != null)
+                // Redirect to equipment details
+                return RedirectToAction("Details", "Equipment", new { id = viewModel.EquipmentId });
+            }
+            catch
             {
-                viewModel.EquipmentName = equipment.Name;
-            }
+                ModelState.AddModelError("", "An error occurred while saving your feedback. Please try again.");
 
-            return View(viewModel);
+                // Repopulate the form
+                var equipment = await _context.Equipment.FindAsync(viewModel.EquipmentId);
+                if (equipment != null)
+                {
+                    viewModel.EquipmentName = equipment.Name;
+                }
+                return View(viewModel);
+            }
         }
 
 
-        [HttpGet]
-        [Authorize(Roles = "Manager, Admin")]
-        public async Task<IActionResult> Manage(int? feedbackId, int? equipmentId)
+        private async Task<int?> GetCurrentUserIdAsync()
         {
-            if (feedbackId == null)
+            // Check if user is authenticated
+            if (!User.Identity.IsAuthenticated)
             {
-                return NotFound();
+                return null;
             }
 
-            var feedback = await _context.Feedbacks
-                .Include(f => f.Equipment)
-                .Include(f => f.User)
-                .FirstOrDefaultAsync(f => f.Id == feedbackId);
-
-            if (feedback == null)
+            var identityUser = await _userManager.GetUserAsync(User);
+            if (identityUser == null)
             {
-                return NotFound();
+                return null;
             }
 
-            var viewModel = new FeedbackViewModel
-            {
-                Id = feedback.Id,
-                CustomerName = feedback.User?.Name,
-                Comment = feedback.Comment,
-                Rating = feedback.Rating,
-                CreatedAt = (DateTime)feedback.CreatedAt,
-                IsHidden = feedback.IsHidden
-            };
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == identityUser.Email);
 
-            ViewBag.EquipmentId = equipmentId; // To pass back for the "Back to List" link
-
-            return View(viewModel);
+            return user?.Id;
         }
 
-        // 3. Hide Feedback (POST) - For Managers and Admins to hide feedback
-        [Authorize(Roles = "Manager, Admin")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Hide(int id, int? equipmentId)
-        {
-            var feedback = await _context.Feedbacks.FindAsync(id);
-            if (feedback == null)
-            {
-                return NotFound();
-            }
 
-            feedback.IsHidden = true; // Setting the C# boolean property
-            await _context.SaveChangesAsync(); // EF Core will translate this to BIT 1
-
-            return RedirectToAction(nameof(Index), new { feedbackId = id, equipmentId = equipmentId });
-        }
-
-        // 4. Show Feedback (POST) - For Managers and Admins to show feedback
-        [Authorize(Roles = "Manager, Admin")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Show(int id, int? equipmentId)
-        {
-            var feedback = await _context.Feedbacks.FindAsync(id);
-            if (feedback == null)
-            {
-                return NotFound();
-            }
-
-            feedback.IsHidden = false; // Setting the C# boolean property
-            await _context.SaveChangesAsync(); // EF Core will translate this to BIT 0
-
-            return RedirectToAction(nameof(Index), new { feedbackId = id, equipmentId = equipmentId });
-        }
-
-        // 5. Delete Feedback (POST) - For Managers and Admins to delete feedback
-        [HttpPost]
-        [Authorize(Roles = "Manager, Admin")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id, int? equipmentId)
-        {
-            var feedback = await _context.Feedbacks.FindAsync(id);
-            if (feedback == null)
-            {
-                return NotFound();
-            }
-
-            _context.Feedbacks.Remove(feedback);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index), new { equipmentId = equipmentId });
-        }
 
 
     }

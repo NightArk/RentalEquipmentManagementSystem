@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace RentalEquipmentManagementLogic.Models;
 
-[Index("Name", Name = "UQ__Categori__737584F6D963C015", IsUnique = true)]
+[Index("Name", Name = "UQ__Categori__737584F62D5E0D24", IsUnique = true)]
 public partial class Category
 {
     [Key]

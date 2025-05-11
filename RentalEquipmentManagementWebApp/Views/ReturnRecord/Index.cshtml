@@ -1,87 +1,106 @@
-﻿@model IEnumerable<RentalEquipmentManagementWebApp.Models.ViewModels.ReturnRecordViewModel>
+﻿@model IEnumerable<RentalEquipmentManagementWebApp.Models.ReturnRecord.ReturnRecordViewModel>
+
 @{
     ViewData["Title"] = "Return Records";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var userRole = ViewData["UserRole"] as string;
 }
 
-<h1>Return Records</h1>
+<div class="container-fluid">
+    <h1 class="mt-4 mb-4">Return Records</h1>
 
-@if (User.IsInRole("Manager") || User.IsInRole("Admin"))
-{
-    <p>
-        <a asp-action="Create" class="btn btn-primary">Create New</a>
-    </p>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Return Record List</h6>
+            @if (userRole == "ManagerOrAdmin")
+            {
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i> Create New
+                </a>
+            }
+        </div>
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">
+                    You don't have any returned records.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="returnRecordsTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Return Id</th>
+                                <th>Rental Transaction Id</th>
+                                <th>Equipment Name</th>
+                                <th>Customer Name</th>
+                                <th>Actual Return Date</th>
+                                <th>Return Condition</th>
+                                <th>Late Return Fee</th>
+                                <th>Additional Charges</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.ReturnId</td>
+                                    <td>@item.RentalTransactionId</td>
+                                    <td>@item.EquipmentName</td>
+                                    <td>@item.CustomerName</td>
+                                    <td>@item.ActualReturnDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@item.ReturnCondition</td>
+                                    <td>@item.LateReturnFee?.ToString("C")</td>
+                                    <td>@item.AdditionalCharges?.ToString("C")</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Details" asp-route-id="@item.ReturnId" class="btn btn-info btn-sm">
+                                                <i class="bi bi-info-circle"></i>
+                                            </a>
+                                            @if (userRole == "ManagerOrAdmin")
+                                            {
+                                                <a asp-action="Edit" asp-route-id="@item.ReturnId" class="btn btn-primary btn-sm">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@item.ReturnId" class="btn btn-danger btn-sm">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#returnRecordsTable').DataTable({
+                "paging": true,
+                "ordering": true,
+                "info": true,
+                "responsive": true,
+                "autoWidth": false,
+                "pageLength": 10,
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
+            });
+        });
+    </script>
 }
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                Return Id
-            </th>
-            <th>
-                Rental Transaction Id
-            </th>
-            <th>
-                Equipment Name
-            </th>
-            <th>
-                Customer Name
-            </th>
-            <th>
-                Actual Return Date
-            </th>
-            <th>
-                Return Condition
-            </th>
-            <th>
-                Late Return Fee
-            </th>
-            <th>
-                Additional Charges
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ReturnId)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.RentalTransactionId)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.EquipmentName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CustomerName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ActualReturnDate)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ReturnCondition)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.LateReturnFee)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.AdditionalCharges)
-                </td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.ReturnId" class="btn btn-sm btn-info">Details</a>
-                    @if (User.IsInRole("Manager") || User.IsInRole("Admin"))
-                    {
-                        <a asp-action="Edit" asp-route-id="@item.ReturnId" class="btn btn-sm btn-primary">Edit</a>
-                    }
-                    @if (User.IsInRole("Admin"))
-                    {
-                        <a asp-action="Delete" asp-route-id="@item.ReturnId" class="btn btn-sm btn-danger">Delete</a>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>

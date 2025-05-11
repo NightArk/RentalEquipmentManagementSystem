@@ -1,0 +1,97 @@
+﻿@model RentalEquipmentManagementLogic.Models.RentalTransaction
+
+@{
+    ViewData["Title"] = "Delete Rental Transaction";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <h1 class="mt-4 mb-4">Delete Rental Transaction</h1>
+
+    <div class="alert alert-danger">
+        <h4><i class="bi bi-exclamation-triangle-fill me-2"></i> Warning!</h4>
+        <p>Are you sure you want to delete this?</p>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Rental Transaction Details</h6>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.ActualRentalStartDate)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.ActualRentalStartDate)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.ReturnDate)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.ReturnDate)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.RentalPeriod)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.RentalPeriod)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.RentalFee)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.RentalFee)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.Deposit)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Deposit)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.PaymentStatus)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.PaymentStatus)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.CreatedAt)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.CreatedAt)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.AssignedEquipment)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.AssignedEquipment.AvailabilityStatus)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.Customer)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Customer.Email)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.RentalRequest)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.RentalRequest.Id)
+                </dd>
+            </dl>
+
+            <form asp-action="Delete" asp-route-id="@Model.Id">
+                <input type="hidden" asp-for="Id" />
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to List
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i> Delete
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

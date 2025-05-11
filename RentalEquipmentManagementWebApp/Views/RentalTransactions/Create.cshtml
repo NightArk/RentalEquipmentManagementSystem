@@ -1,0 +1,138 @@
+﻿@model RentalEquipmentManagementWebApp.Models.RentalTransaction.RentalTransactionCreateViewModel
+
+@{
+    ViewData["Title"] = "Create Rental Transaction";
+}
+
+<h2>Create Rental Transaction</h2>
+
+<form asp-action="Create" enctype="multipart/form-data">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="RentalRequestId" class="form-label">Rental Request (ID)</label>
+            <select asp-for="RentalRequestId" class="form-select" asp-items="ViewBag.RentalRequests" id="RentalRequestId">
+                <option value="">-- Select Rental Request --</option>
+            </select>
+            <span asp-validation-for="RentalRequestId" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Customer Name (ID)</label>
+            <input class="form-control" id="CustomerName" readonly />
+            <input type="hidden" asp-for="CustomerId" id="CustomerId" /> @* Hidden field for CustomerId *@
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Equipment Name (ID)</label>
+            <input class="form-control" id="EquipmentName" readonly />
+            <input type="hidden" asp-for="AssignedEquipmentId" id="AssignedEquipmentId" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="ActualRentalStartDate" class="form-label">Start Date</label>
+            <input asp-for="ActualRentalStartDate" class="form-control" type="date" />
+            <span asp-validation-for="ActualRentalStartDate" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="ReturnDate" class="form-label">Return Date</label>
+            <input asp-for="ReturnDate" class="form-control" type="date" />
+            <span asp-validation-for="ReturnDate" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label asp-for="RentalPeriod" class="form-label">Rental Period (days)</label>
+            <input asp-for="RentalPeriod" class="form-control" />
+            <span asp-validation-for="RentalPeriod" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="RentalFee" class="form-label">Rental Fee</label>
+            <input asp-for="RentalFee" class="form-control" />
+            <span asp-validation-for="RentalFee" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Deposit" class="form-label">Deposit</label>
+            <input asp-for="Deposit" class="form-control" />
+            <span asp-validation-for="Deposit" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="PaymentStatus" class="form-label">Payment Status</label>
+        <select asp-for="PaymentStatus" class="form-select">
+            <option value="">-- Select Status --</option>
+            <option value="Pending">Pending</option>
+            <option value="Paid">Paid</option>
+            <option value="Overdue">Overdue</option>
+        </select>
+        <span asp-validation-for="PaymentStatus" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Upload Files</label>
+        <input asp-for="Files" type="file" class="form-control" multiple />
+        <span asp-validation-for="Files" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+
+    <script>
+        // When the rental request changes, populate the customer name and equipment name
+        $('#RentalRequestId').change(function () {
+            var rentalRequestId = $(this).val();
+            console.log("Selected Rental Request ID:", rentalRequestId);
+
+            if (rentalRequestId) {
+                $.ajax({
+                    url: '/RentalTransactions/GetRentalRequestDetails',
+                    type: 'GET',
+                    data: { id: rentalRequestId },
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log("AJAX Success:", data);
+                        if (data) {
+                            $('#CustomerName').val(data.customerName + ' (' + data.customerId + ')');
+                            $('#CustomerId').val(data.customerId);  // Populate the hidden field
+                            $('#EquipmentName').val(data.equipmentName + ' (' + data.equipmentId + ')');
+                            $('#AssignedEquipmentId').val(data.equipmentId);
+                        } else {
+                            console.log("AJAX Success, but no data returned for Rental Request ID:", rentalRequestId);
+                            $('#CustomerName').val('');
+                            $('#CustomerId').val('');
+                            $('#EquipmentName').val('');
+                            $('#AssignedEquipmentId').val('');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("AJAX Error:", error);
+                        console.error("Status:", status);
+                        console.error("Response:", xhr.responseText);
+                        $('#CustomerName').val('');
+                        $('#CustomerId').val('');
+                        $('#EquipmentName').val('');
+                        $('#AssignedEquipmentId').val('');
+                    }
+                });
+            } else {
+                console.log("No Rental Request ID selected.");
+                $('#CustomerName').val('');
+                 $('#CustomerId').val('');
+                $('#EquipmentName').val('');
+                $('#AssignedEquipmentId').val('');
+            }
+        });
+
+    </script>
+}

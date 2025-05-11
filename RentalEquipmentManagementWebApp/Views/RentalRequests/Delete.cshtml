@@ -1,0 +1,71 @@
+﻿@model RentalEquipmentManagementWebApp.Models.RentalRequest.RentalRequestViewModel
+@{
+    ViewData["Title"] = "Create Rental Request";
+}
+
+<div class="container-fluid">
+    <h1 class="mt-4 mb-4">Create Rental Request</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="post" class="row g-3">
+                <div class="col-md-6">
+                    <label for="CustomerId" class="form-label">Customer</label>
+                    <select asp-for="CustomerId" class="form-select" id="CustomerId">
+                        <option value="">Select Customer</option>
+                        @foreach (var item in ViewBag.CustomerList as List<SelectListItem>)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                    <span asp-validation-for="CustomerId" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="EquipmentId" class="form-label">Equipment</label>
+                    <select asp-for="EquipmentId" class="form-select" id="EquipmentId">
+                        <option value="">Select Equipment</option>
+                        @foreach (var item in ViewBag.EquipmentList as List<SelectListItem>)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                    <span asp-validation-for="EquipmentId" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="RentalStartDate" class="form-label">Rental Start Date</label>
+                    <input asp-for="RentalStartDate" type="date" class="form-control" id="RentalStartDate" />
+                    <span asp-validation-for="RentalStartDate" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="ReturnDate" class="form-label">Return Date</label>
+                    <input asp-for="ReturnDate" type="date" class="form-control" id="ReturnDate" />
+                    <span asp-validation-for="ReturnDate" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="TotalCost" class="form-label">Total Cost</label>
+                    <input asp-for="TotalCost" type="number" class="form-control" id="TotalCost" step="0.01" />
+                    <span asp-validation-for="TotalCost" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="Description" class="form-label">Description</label>
+                    <textarea asp-for="Description" class="form-control" id="Description"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary">Create Rental Request</button>
+                    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

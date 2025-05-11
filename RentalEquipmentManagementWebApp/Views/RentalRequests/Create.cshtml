@@ -1,0 +1,77 @@
+﻿@model RentalEquipmentManagementWebApp.Models.RentalRequest.RentalRequestCreateViewModel
+
+@{
+    ViewData["Title"] = "Create Rental Request";
+}
+
+<div class="container-fluid">
+    <h1 class="mt-4 mb-4">Create Rental Request</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Rental Request Details</h6>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <div class="row">
+                    @if (Model.UserList != null && Model.UserList.Any())
+                    {
+                        <div class="col-md-6">
+                            <label for="UserId" class="form-label">Select User</label>
+                            <select class="form-select" id="UserId" name="UserId" required>
+                                <option value="">Select User</option>
+                                @foreach (var user in Model.UserList)
+                                {
+                                    <option value="@user.Value">@user.Text</option>
+                                }
+                            </select>
+                        </div>
+                    }
+
+                    <div class="col-md-6">
+                        <label for="EquipmentId" class="form-label">Select Equipment</label>
+                        <select class="form-select" id="EquipmentId" name="EquipmentId" required>
+                            <option value="">Select Equipment</option>
+                            @foreach (var equipment in Model.EquipmentList)
+                            {
+                                <option value="@equipment.Value">@equipment.Text</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="RentalStartDate" class="form-label">Rental Start Date</label>
+                        <input type="date" class="form-control" id="RentalStartDate" name="RentalStartDate" required />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="ReturnDate" class="form-label">Return Date</label>
+                        <input type="date" class="form-control" id="ReturnDate" name="ReturnDate" required />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="TotalCost" class="form-label">Total Cost</label>
+                        <input type="number" class="form-control" id="TotalCost" name="TotalCost" required />
+                    </div>
+
+                    <div class="col-md-12">
+                        <label for="Description" class="form-label">Description</label>
+                        <textarea class="form-control" id="Description" name="Description" required></textarea>
+                    </div>
+
+                    <div class="col-md-12 text-center mt-4">
+                        <button type="submit" class="btn btn-primary">Create Request</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,19 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization; // Add this
-using System.Collections.Generic; // Add this
-using System.Linq; // Add this
-using RentalEquipmentManagementLogic.Models; // Assuming your models are in this namespace
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using RentalEquipmentManagementLogic.Models;
 
 namespace RentalEquipmentManagementWebApp.Controllers
 {
     public class CategoriesController : Controller
     {
-        private readonly EquipmentRentalDBContext _context; // Replace with your actual database context
+        private readonly EquipmentRentalDBContext _context;
 
-        public CategoriesController(EquipmentRentalDBContext context) // Inject the context
+        public CategoriesController(EquipmentRentalDBContext context)
         {
             _context = context;
         }
+
 
         [Authorize] // Ensure only logged-in users can access
         public IActionResult Index(string searchString)
@@ -28,14 +27,14 @@ namespace RentalEquipmentManagementWebApp.Controllers
             return View(categories.ToList()); // Pass the categories to the view
         }
 
-        [Authorize(Roles = "Admin")] // Only Admins can access these
+        [Authorize(Roles = "Administrator")] // Only Admins can access these
         public IActionResult Create()
         {
             return View();
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Category category)
         {
@@ -48,7 +47,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
             return View(category);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Administrator")]
         public IActionResult Edit(int? id)
         {
             if (id == null)
@@ -65,7 +64,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, Category category)
         {
@@ -83,7 +82,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
             return View(category);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Administrator")]
         public IActionResult Delete(int? id)
         {
             if (id == null)
@@ -101,7 +100,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
@@ -110,5 +109,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
             _context.SaveChanges();
             return RedirectToAction(nameof(Index));
         }
+
+
     }
 }

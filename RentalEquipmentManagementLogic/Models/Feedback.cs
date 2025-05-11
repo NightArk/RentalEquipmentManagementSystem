@@ -24,6 +24,8 @@ public partial class Feedback
     [Column(TypeName = "datetime")]
     public DateTime? CreatedAt { get; set; }
 
+    public bool IsHide { get; set; }
+
     [ForeignKey("EquipmentId")]
     [InverseProperty("Feedbacks")]
     public virtual Equipment? Equipment { get; set; }

@@ -1,0 +1,144 @@
+﻿@model IEnumerable<RentalEquipmentManagementWebApp.Models.RentalRequest.RentalRequestViewModel>
+
+@{
+    ViewData["Title"] = "Rental Requests";
+
+    string statusFilter = ViewData["StatusFilter"] as string;
+    string equipmentSearch = ViewData["EquipmentSearch"] as string;
+    string customerNameSearch = ViewData["CustomerNameSearch"] as string;
+    string fromDate = ViewData["FromDate"] as string;
+    string toDate = ViewData["ToDate"] as string;
+}
+
+<div class="container-fluid">
+    <h1 class="mt-4 mb-4">Rental Requests</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Search & Filter</h6>
+
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i> Create New
+                </a>
+
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label class="form-label">Equipment Name</label>
+                    <input type="text" name="equipmentSearch" value="@equipmentSearch" class="form-control" placeholder="Search equipment..." />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Customer Name</label>
+                    <input type="text" name="customerNameSearch" value="@customerNameSearch" class="form-control" placeholder="Search customer..." />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select name="statusFilter" class="form-select">
+                        <option value="">All</option>
+                        <option value="Pending" selected="@(statusFilter == "Pending")">Pending</option>
+                        <option value="Approved" selected="@(statusFilter == "Approved")">Approved</option>
+                        <option value="PickedUp" selected="@(statusFilter == "PickedUp")">PickedUp</option>
+                        <option value="Returned" selected="@(statusFilter == "Returned")">Returned</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">From Date</label>
+                    <input type="date" name="fromDate" value="@fromDate" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">To Date</label>
+                    <input type="date" name="toDate" value="@toDate" class="form-control" />
+                </div>
+                <div class="col-md-12 d-flex justify-content-end mt-2">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search"></i> Filter
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header d-flex justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Rental Request List</h6>
+        </div>
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">No rental requests found.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="rentalRequestsTable">
+                        <thead>
+                            <tr>
+                                <th>Rental Start Date</th>
+                                <th>Return Date</th>
+                                <th>Total Cost</th>
+                                <th>Status</th>
+                                <th>Created At</th>
+                                <th>Description</th>
+                                <th>Customer</th>
+                                <th>Equipment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.RentalStartDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@item.ReturnDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@item.TotalCost.ToString("C")</td>
+                                    <td>@item.Status</td>
+                                    <td>@item.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                    <td>@item.Description</td>
+                                    <td>@item.CustomerName</td>
+                                    <td>@item.EquipmentName</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">
+                                                <i class="bi bi-info-circle"></i>
+                                            </a>
+                                            @if (User.IsInRole("Administrator") || User.IsInRole("Manager") || (User.IsInRole("Customer") && item.Status == "Pending"))
+                                            {
+                                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary btn-sm">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
+                                            }
+                                            @if (User.IsInRole("Administrator"))
+                                            {
+                                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#rentalRequestsTable').DataTable({
+                paging: true,
+                ordering: true,
+                info: true,
+                responsive: true,
+                autoWidth: false
+            });
+        });
+    </script>
+}

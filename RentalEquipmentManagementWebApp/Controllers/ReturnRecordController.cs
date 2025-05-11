@@ -1,99 +1,99 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RentalEquipmentManagementLogic.Models;
-using RentalEquipmentManagementWebApp.Models.ViewModels;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
+using RentalEquipmentManagementWebApp.Models.ReturnRecord;
+using RentalEquipmentManagementWebApp.Services;
+
 
 namespace RentalEquipmentManagementWebApp.Controllers
 {
-    [Authorize] // All logged-in users can access this controller
+    [Authorize]
     public class ReturnRecordController : Controller
     {
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
         private readonly EquipmentRentalDBContext _context;
+        private readonly IAuditService _auditService;
 
-        public ReturnRecordController(EquipmentRentalDBContext context)
+        public ReturnRecordController(
+            UserManager<IdentityUser> userManager,
+            SignInManager<IdentityUser> signInManager,
+            EquipmentRentalDBContext context,
+            IAuditService auditService)
         {
+            _userManager = userManager;
+            _signInManager = signInManager;
             _context = context;
+            _auditService = auditService;
         }
 
-        // GET: ReturnRecords
         public async Task<IActionResult> Index()
         {
-            if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+            var identityUser = await _userManager.GetUserAsync(User);
+            if (identityUser == null)
+                return Forbid();
+
+            // Determine the user role
+            var userRole = await _userManager.GetRolesAsync(identityUser);
+            var isAdminOrManager = userRole.Contains("Administrator") || userRole.Contains("Manager");
+
+            ViewData["UserRole"] = isAdminOrManager ? "ManagerOrAdmin" : "Customer";
+
+            List<ReturnRecord> returnRecords;
+
+            if (isAdminOrManager)
             {
-                var returnRecords = await _context.ReturnRecords
+                // Admin/Manager: Retrieve all return records
+                returnRecords = await _context.ReturnRecords
                     .Include(r => r.RentalTransaction)
                         .ThenInclude(rt => rt.AssignedEquipment)
                     .Include(r => r.RentalTransaction)
                         .ThenInclude(rt => rt.Customer)
                     .ToListAsync();
-
-                var viewModel = returnRecords.Select(r => new ReturnRecordViewModel
-                {
-                    ReturnId = r.Id,
-                    RentalTransactionId = r.RentalTransactionId,
-                    ActualReturnDate = r.ActualReturnDate,
-                    ReturnCondition = r.ReturnCondition,
-                    LateReturnFee = r.LateReturnFee,
-                    AdditionalCharges = r.AdditionalCharges,
-                    EquipmentId = r.RentalTransaction?.AssignedEquipment?.Id,
-                    EquipmentName = r.RentalTransaction?.AssignedEquipment?.Name,
-                    CustomerId = r.RentalTransaction?.CustomerId,
-                    CustomerName = r.RentalTransaction?.Customer?.Name,
-                    CustomerEmail = r.RentalTransaction?.Customer?.Email
-                }).ToList();
-
-                return View(viewModel);
             }
-            else if (User.IsInRole("Customer"))
+            else
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (!string.IsNullOrEmpty(userId))
-                {
-                    var customerRentalTransactions = await _context.RentalTransactions
-                        .Where(rt => rt.CustomerId.HasValue && rt.CustomerId.Value.ToString() == userId)
-                        .Select(rt => rt.Id)
-                        .ToListAsync();
+                // Customer: Retrieve return records for the logged-in user's rental transactions
+                var customUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == identityUser.Email);
 
-                    var returnRecords = await _context.ReturnRecords
-                        .Include(r => r.RentalTransaction)
-                            .ThenInclude(rt => rt.AssignedEquipment)
-                        .Include(r => r.RentalTransaction)
-                            .ThenInclude(rt => rt.Customer)
-                        .Where(r => r.RentalTransactionId.HasValue && customerRentalTransactions.Contains(r.RentalTransactionId.Value))
-                        .ToListAsync();
-
-                    var viewModel = returnRecords.Select(r => new ReturnRecordViewModel
-                    {
-                        ReturnId = r.Id,
-                        RentalTransactionId = r.RentalTransactionId,
-                        ActualReturnDate = r.ActualReturnDate,
-                        ReturnCondition = r.ReturnCondition,
-                        LateReturnFee = r.LateReturnFee,
-                        AdditionalCharges = r.AdditionalCharges,
-                        EquipmentId = r.RentalTransaction?.AssignedEquipment?.Id,
-                        EquipmentName = r.RentalTransaction?.AssignedEquipment?.Name,
-                        CustomerId = r.RentalTransaction?.CustomerId,
-                        CustomerName = r.RentalTransaction?.Customer?.Name,
-                        CustomerEmail = r.RentalTransaction?.Customer?.Email
-                    }).ToList();
-
-                    return View(viewModel);
-                }
-                else
-                {
+                if (customUser == null)
                     return Forbid();
-                }
+
+                var customerRentalTransactionIds = await _context.RentalTransactions
+                    .Where(rt => rt.CustomerId == customUser.Id)
+                    .Select(rt => rt.Id)
+                    .ToListAsync();
+
+                returnRecords = await _context.ReturnRecords
+                    .Include(r => r.RentalTransaction)
+                        .ThenInclude(rt => rt.AssignedEquipment)
+                    .Include(r => r.RentalTransaction)
+                        .ThenInclude(rt => rt.Customer)
+                    .Where(r => r.RentalTransactionId.HasValue && customerRentalTransactionIds.Contains(r.RentalTransactionId.Value))
+                    .ToListAsync();
             }
 
-            return Forbid();
+            var viewModel = returnRecords.Select(r => new ReturnRecordViewModel
+            {
+                ReturnId = r.Id,
+                RentalTransactionId = r.RentalTransactionId,
+                ActualReturnDate = r.ActualReturnDate,
+                ReturnCondition = r.ReturnCondition,
+                LateReturnFee = r.LateReturnFee,
+                AdditionalCharges = r.AdditionalCharges,
+                EquipmentId = r.RentalTransaction?.AssignedEquipment?.Id,
+                EquipmentName = r.RentalTransaction?.AssignedEquipment?.Name,
+                CustomerId = r.RentalTransaction?.CustomerId,
+                CustomerName = r.RentalTransaction?.Customer?.Name,
+                CustomerEmail = r.RentalTransaction?.Customer?.Email
+            }).ToList();
+
+            return View(viewModel);
         }
 
-        // GET: ReturnRecords/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -128,7 +128,21 @@ namespace RentalEquipmentManagementWebApp.Controllers
                 CustomerEmail = returnRecord.RentalTransaction?.Customer?.Email
             };
 
-            if (User.IsInRole("Admin") || User.IsInRole("Manager") || (User.IsInRole("Customer") && viewModel.CustomerId.ToString() == User.FindFirstValue(ClaimTypes.NameIdentifier)))
+            var identityUser = await _userManager.GetUserAsync(User);
+            if (identityUser == null)
+            {
+                return Forbid();
+            }
+
+            // Admin or Manager access
+            if (await _userManager.IsInRoleAsync(identityUser, "Administrator") || await _userManager.IsInRoleAsync(identityUser, "Manager"))
+            {
+                return View(viewModel);
+            }
+
+            // Customer access - verify ownership
+            var customUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == identityUser.Email);
+            if (customUser != null && returnRecord.RentalTransaction?.CustomerId == customUser.Id)
             {
                 return View(viewModel);
             }
@@ -136,9 +150,6 @@ namespace RentalEquipmentManagementWebApp.Controllers
             return Forbid();
         }
 
-
-
-   
         // GET: ReturnRecords/Create
         public IActionResult Create()
         {
@@ -216,7 +227,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
             return View(viewModel);
         }
 
-        [Authorize(Roles = "Manager,Admin")]
+        [Authorize(Roles = "Manager,Administrator")]
         // GET: ReturnRecords/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -259,11 +270,11 @@ namespace RentalEquipmentManagementWebApp.Controllers
             return View(viewModel);
         }
 
-        [Authorize(Roles = "Manager,Admin")]
+        [Authorize(Roles = "Manager,Administrator")]
         // POST: ReturnRecords/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, CreateReturnRecordViewModel viewModel) // Removed [Bind] attribute
+        public async Task<IActionResult> Edit(int id, CreateReturnRecordViewModel viewModel) 
         {
             if (id != _context.ReturnRecords.FindAsync(id).Result?.Id) // Basic check if the record exists
             {
@@ -316,8 +327,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
             return View(viewModel);
         }
 
-
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Administrator")]
         // GET: ReturnRecords/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -355,7 +365,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
             return View(viewModel);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Administrator")]
         // POST: ReturnRecords/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -366,10 +376,10 @@ namespace RentalEquipmentManagementWebApp.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
         private bool ReturnRecordExists(int id)
         {
             return _context.ReturnRecords.Any(e => e.Id == id);
         }
+
     }
 }

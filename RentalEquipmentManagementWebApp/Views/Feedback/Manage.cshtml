@@ -1,72 +1,78 @@
-﻿@model RentalEquipmentManagementWebApp.Models.ViewModels.FeedbackViewModel
-
+﻿@model IEnumerable<RentalEquipmentManagementWebApp.Models.Feedback.FeedbackViewModel>
 @{
-    ViewData["Title"] = "Manage Feedback Details";
+    ViewData["Title"] = "Manage Feedback";
+    var equipmentName = ViewBag.EquipmentName as string;
 }
 
-<h1>Manage Feedback Details</h1>
+<h2>Manage Feedback for @equipmentName</h2>
 
-<div>
-    <h4>Feedback</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            Customer
-        </dt>
-        <dd class="col-sm-10">
-            @Model.CustomerName
-        </dd>
-        <dt class="col-sm-2">
-            Equipment
-        </dt>
-        <dd class="col-sm-10">
-            @ViewBag.EquipmentName
-        </dd>
-        <dt class="col-sm-2">
-            Comment
-        </dt>
-        <dd class="col-sm-10">
-            @Model.Comment
-        </dd>
-        <dt class="col-sm-2">
-            Rating
-        </dt>
-        <dd class="col-sm-10">
-            @Model.Rating
-        </dd>
-        <dt class="col-sm-2">
-            Created At
-        </dt>
-        <dd class="col-sm-10">
-            @Model.CreatedAt.ToLocalTime()
-        </dd>
-        <dt class="col-sm-2">
-            Is Hidden
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.IsHidden)
-        </dd>
-    </dl>
-</div>
-
-<div>
-    <form asp-action="Delete" asp-route-id="@Model.Id" asp-route-equipmentId="@ViewBag.EquipmentId" method="post" class="d-inline">
-        @Html.AntiForgeryToken()
-        <button type="submit" class="btn btn-danger">Delete</button>
-    </form>
-    @if (!Model.IsHidden)
-    {
-        <form asp-action="Hide" asp-route-id="@Model.Id" asp-route-equipmentId="@ViewBag.EquipmentId" method="post" class="d-inline">
-            @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-warning">Hide</button>
-        </form>
-    }
-    else
-    {
-        <form asp-action="Show" asp-route-id="@Model.Id" asp-route-equipmentId="@ViewBag.EquipmentId" method="post" class="d-inline">
-            @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-success">Show</button>
-        </form>
-    }
-    <a asp-action="Index" asp-route-equipmentId="@ViewBag.EquipmentId" class="btn btn-secondary">Back to List</a>
-</div>
+@if (Model.Any())
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Rating</th>
+                <th>Comment</th>
+                <th>Created At</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var feedback in Model)
+            {
+                <tr>
+                    <td>@feedback.UserName</td>
+                    <td>
+                        <small>
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                if (i <= feedback.Rating)
+                                {
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-star text-warning"></i>
+                                }
+                            }
+                        </small>
+                    </td>
+                    <td>@feedback.Comment</td>
+                    <td>@feedback.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        @if (feedback.IsHide)
+                        {
+                            <span class="badge bg-danger">Hidden</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Visible</span>
+                        }
+                    </td>
+                    <td>
+                        @if (feedback.IsHide)
+                        {
+                            <form asp-action="Show" asp-controller="Feedback" method="post" style="display:inline">
+                                <input type="hidden" name="id" value="@feedback.Id" />
+                                <button type="submit" class="btn btn-sm btn-success">Show</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-action="Hide" asp-controller="Feedback" method="post" style="display:inline">
+                                <input type="hidden" name="id" value="@feedback.Id" />
+                                <button type="submit" class="btn btn-sm btn-warning">Hide</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info">No feedback found for this equipment.</div>
+}

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace RentalEquipmentManagementLogic.Models;
 
-[Index("Email", Name = "UQ__Users__A9D10534EE022DF7", IsUnique = true)]
+[Index("Email", Name = "UQ__Users__A9D10534FA4F6145", IsUnique = true)]
 public partial class User
 {
     [Key]

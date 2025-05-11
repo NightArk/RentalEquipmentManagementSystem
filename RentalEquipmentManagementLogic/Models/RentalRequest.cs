@@ -30,6 +30,9 @@ public partial class RentalRequest
     [Column(TypeName = "datetime")]
     public DateTime? CreatedAt { get; set; }
 
+    [Unicode(false)]
+    public string? Description { get; set; }
+
     [ForeignKey("CustomerId")]
     [InverseProperty("RentalRequests")]
     public virtual User? Customer { get; set; }

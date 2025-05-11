@@ -1,0 +1,72 @@
+﻿@model RentalEquipmentManagementWebApp.Models.RentalRequest.RentalRequestViewModel
+@{
+    ViewData["Title"] = "Edit Rental Request";
+    bool isCustomer = (bool)ViewBag.IsCustomer;
+}
+
+<div class="container-fluid">
+    <h1 class="mt-4 mb-4">Edit Rental Request</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="Id" />
+
+                <div class="mb-3">
+                    <label class="form-label">Customer</label>
+                    <input type="text" class="form-control" value="@Model.CustomerName" disabled />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Equipment</label>
+                    <input type="text" class="form-control" value="@Model.EquipmentName" disabled />
+                </div>
+
+                @if (!isCustomer)
+                {
+                    <div class="mb-3">
+                        <label asp-for="RentalStartDate" class="form-label"></label>
+                        <input asp-for="RentalStartDate" class="form-control" type="date" />
+                        <span asp-validation-for="RentalStartDate" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ReturnDate" class="form-label"></label>
+                        <input asp-for="ReturnDate" class="form-control" type="date" />
+                        <span asp-validation-for="ReturnDate" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="TotalCost" class="form-label"></label>
+                        <input asp-for="TotalCost" class="form-control" />
+                        <span asp-validation-for="TotalCost" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Status" class="form-label"></label>
+                        <select asp-for="Status" class="form-select">
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="PickedUp">PickedUp</option>
+                            <option value="Returned">Returned</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
+                }
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save</button>
+                <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

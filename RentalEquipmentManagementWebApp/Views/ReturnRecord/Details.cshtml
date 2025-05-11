@@ -1,77 +1,70 @@
-﻿@model RentalEquipmentManagementWebApp.Models.ViewModels.ReturnRecordViewModel
-
+﻿@model RentalEquipmentManagementWebApp.Models.ReturnRecord.ReturnRecordViewModel
 
 @{
     ViewData["Title"] = "Return Record Details";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Return Record Details</h1>
+<div class="container-fluid">
+    <h1 class="mt-4 mb-4">Return Record Details</h1>
 
-<div>
-    <h4>ReturnRecord</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            Return Id
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ReturnId)
-        </dd>
-        <dt class="col-sm-2">
-            Rental Transaction Id
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.RentalTransactionId)
-        </dd>
-        <dt class="col-sm-2">
-            Equipment Name
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.EquipmentName)
-        </dd>
-        <dt class="col-sm-2">
-            Customer Name
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.CustomerName)
-        </dd>
-        @if (!string.IsNullOrEmpty(Model.CustomerEmail))
-        {
-            <dt class="col-sm-2">
-                Customer Email
-            </dt>
-            <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.CustomerEmail)
-            </dd>
-        }
-        <dt class="col-sm-2">
-            Actual Return Date
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ActualReturnDate)
-        </dd>
-        <dt class="col-sm-2">
-            Return Condition
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ReturnCondition)
-        </dd>
-        <dt class="col-sm-2">
-            Late Return Fee
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.LateReturnFee)
-        </dd>
-        <dt class="col-sm-2">
-            Additional Charges
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.AdditionalCharges)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model.ReturnId" class="btn btn-primary">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Return ID: @Model.ReturnId</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Rental Transaction ID</dt>
+                        <dd class="col-sm-8">@Model.RentalTransactionId</dd>
+
+                        <dt class="col-sm-4">Equipment Name</dt>
+                        <dd class="col-sm-8">@Model.EquipmentName</dd>
+
+                        <dt class="col-sm-4">Customer Name</dt>
+                        <dd class="col-sm-8">@Model.CustomerName</dd>
+
+                        @if (!string.IsNullOrEmpty(Model.CustomerEmail))
+                        {
+                            <dt class="col-sm-4">Customer Email</dt>
+                            <dd class="col-sm-8">@Model.CustomerEmail</dd>
+                        }
+
+                        <dt class="col-sm-4">Actual Return Date</dt>
+                        <dd class="col-sm-8">@Model.ActualReturnDate.ToString("d")</dd>
+
+                        <dt class="col-sm-4">Return Condition</dt>
+                        <dd class="col-sm-8">@Model.ReturnCondition</dd>
+
+                        <dt class="col-sm-4">Late Return Fee</dt>
+                        <dd class="col-sm-8">@Model.LateReturnFee?.ToString("F2")</dd>
+                        <dt class="col-sm-4">Additional Charges</dt>
+                        <dd class="col-sm-8">@Model.AdditionalCharges?.ToString("F2")</dd>
+                    </dl>
+
+                    <div class="mt-4">
+                        <!-- Edit Button visible for Admin and Manager -->
+                        @if (User.IsInRole("Administrator") || User.IsInRole("Manager"))
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.ReturnId" class="btn btn-primary me-2">
+                                <i class="bi bi-pencil-square me-1"></i> Edit
+                            </a>
+
+                            <!-- Delete Button visible for Admin and Manager -->
+                            <a asp-action="DeleteConfirmation" asp-route-id="@Model.ReturnId" class="btn btn-danger">
+                                <i class="bi bi-trash me-1"></i> Delete
+                            </a>
+                        }
+
+                        <!-- Back to List Button -->
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Back to List
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
