@@ -109,7 +109,7 @@ namespace RentalEquipmentManagementApp
 #pragma warning disable CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
             dgvRequests.CellClick += dgvRequests_CellClick;
 #pragma warning restore CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
-            _authService.LogAccess(
+            _authService.LogAccessAsync(
                 _currentUser.Id,
                 "Viewed Rental Requests",
                 "Opened RentalRequestsForm"
@@ -130,7 +130,7 @@ namespace RentalEquipmentManagementApp
         private void btnFilter_Click(object sender, EventArgs e)
         {
             ReftereshData();
-            _authService.LogAccess(
+            _authService.LogAccessAsync(
                 _currentUser.Id,
                 "Filtered Rental Requests",
                 $"ID Filter: {txtFilterID.Text}, Customer Filter: {ddFilterStatus.Text}"
@@ -250,7 +250,7 @@ namespace RentalEquipmentManagementApp
                         // Only log if something actually changed
                         if (changed)
                         {
-                            _authService.LogAccess(
+                            _authService.LogAccessAsync(
                                 _currentUser.Id,
                                 "Updated Rental Request",
                                 $"Request ID {id}\n{changes}"

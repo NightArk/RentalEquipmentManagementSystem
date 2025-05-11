@@ -103,7 +103,7 @@ namespace RentalEquipmentManagementApp
                 _context.RentalTransactions.Add(transaction);
                 _context.SaveChanges();
 
-                _authService.LogAccess(
+                _authService.LogAccessAsync(
                     _currentUser.Id,
                     "Added Rental Transaction",
                     $"Customer ID: {customerId}, Equipment ID: {equipmentId}"

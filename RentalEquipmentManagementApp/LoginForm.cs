@@ -1,13 +1,6 @@
 ﻿using RentalEquipmentManagementLogic;
 using RentalEquipmentManagementLogic.Models;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace RentalEquipmentManagementApp
@@ -20,29 +13,35 @@ namespace RentalEquipmentManagementApp
         {
             InitializeComponent();
             _authService = new AuthService(new EquipmentRentalDBContext());
-            this.StartPosition = FormStartPosition.CenterScreen; // Center the form on the screen
+            this.StartPosition = FormStartPosition.CenterScreen;
         }
 
-        private void btnLogin_Click(object sender, EventArgs e)
+        private async void btnLogin_Click(object sender, EventArgs e)
         {
-            var user = _authService.Authenticate(txtEmail.Text, txtPassword.Text);
-
-            if (user == null)
+            try
             {
-                MessageBox.Show("Invalid credentials");
-                return;
-            }
+                var user = await _authService.AuthenticateAsync(txtEmail.Text, txtPassword.Text);
 
-            if (user.Role != "Admin" && user.Role != "Manager" && user.Role != "RentalManager")
+                if (user == null)
+                {
+                    MessageBox.Show("Invalid credentials");
+                    return;
+                }
+
+                if (user.Role != "Admin" && user.Role != "Manager" && user.Role != "RentalManager")
+                {
+                    MessageBox.Show("Access denied. This application is for administrators and managers only.");
+                    return;
+                }
+
+                new MainDashboardForm(user).Show();
+                await _authService.LogAccessAsync(user.Id, "Login", "none");
+                this.Hide();
+            }
+            catch (Exception ex)
             {
-                MessageBox.Show("Access denied. This application is for administrators and managers only.");
-                return;
+                MessageBox.Show($"Login error: {ex.Message}");
             }
-
-           
-            new MainDashboardForm(user).Show();
-            _authService.LogAccess(user.Id,"Login","none");
-            this.Hide();
         }
     }
 }

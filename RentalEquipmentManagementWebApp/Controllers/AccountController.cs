@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using RentalEquipmentManagementLogic;
 using RentalEquipmentManagementLogic.Models;
 using RentalEquipmentManagementWebApp.Models.Account;
 using RentalEquipmentManagementWebApp.Services;
@@ -13,6 +14,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly EquipmentRentalDBContext _context;
         private readonly IAuditService _auditService;
+        private readonly ISharedAuthenticationService _sharedAuthService;
 
         public AccountController(
             UserManager<IdentityUser> userManager,
@@ -24,6 +26,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
             _signInManager = signInManager;
             _context = context;
             _auditService = auditService;
+            _sharedAuthService = new SharedAuthenticationService(context);
         }
 
         [HttpGet]
@@ -57,16 +60,19 @@ namespace RentalEquipmentManagementWebApp.Controllers
                     {
                         Name = model.Name,
                         Email = model.Email,
-                        PasswordHash = _userManager.PasswordHasher.HashPassword(user, model.Password),
                         Role = "Customer",
                         CreatedAt = DateTime.Now
                     };
+
+                    // Use shared service to hash password
+                    customUser.PasswordHash = await _sharedAuthService.HashPasswordAsync(model.Password, customUser);
 
                     _context.Users.Add(customUser);
                     await _context.SaveChangesAsync();
 
                     // Log the registration
-                    await _auditService.LogActivityAsync("User Registration", $"User {model.Email} registered successfully", customUser.Id);
+                    await _sharedAuthService.LogUserActivityAsync(customUser.Id, "User Registration",
+                        $"User {model.Email} registered successfully", "Web");
 
                     // Sign in the user
                     await _signInManager.SignInAsync(user, isPersistent: false);
@@ -98,20 +104,39 @@ namespace RentalEquipmentManagementWebApp.Controllers
 
             if (ModelState.IsValid)
             {
+                // Authenticate using Identity first
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
 
                 if (result.Succeeded)
                 {
-                    // Get the identity user
-                    var identityUser = await _userManager.FindByEmailAsync(model.Email);
-                    
+                    // Also validate password using shared service
+                    var isValidPassword = await _sharedAuthService.ValidatePasswordAsync(model.Email, model.Password);
+
+                    if (!isValidPassword)
+                    {
+                        // Log the discrepancy but still allow login
+                        var user = await _sharedAuthService.GetUserByEmailAsync(model.Email);
+                        if (user != null)
+                        {
+                            await _sharedAuthService.LogUserActivityAsync(user.Id, "Password Validation Discrepancy",
+                                "Identity validation succeeded but shared validation failed", "Web");
+
+                            // Update the custom user's password hash to match Identity's hash
+                            var identityUser = await _userManager.FindByEmailAsync(model.Email);
+                            user.PasswordHash = await _sharedAuthService.HashPasswordAsync(model.Password, user);
+                            _context.Update(user);
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+
                     // Get the custom user
-                    var customUser = _context.Users.FirstOrDefault(u => u.Email == model.Email);
-                    
+                    var customUser = await _sharedAuthService.GetUserByEmailAsync(model.Email);
+
                     if (customUser != null)
                     {
                         // Log the login
-                        await _auditService.LogActivityAsync("User Login", $"User {model.Email} logged in successfully", customUser.Id);
+                        await _sharedAuthService.LogUserActivityAsync(customUser.Id, "User Login",
+                            $"User {model.Email} logged in successfully", "Web");
                     }
 
                     if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -123,7 +148,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
                         return RedirectToAction("Index", "Home");
                     }
                 }
-                
+
                 if (result.IsLockedOut)
                 {
                     return RedirectToAction(nameof(Lockout));
@@ -144,19 +169,20 @@ namespace RentalEquipmentManagementWebApp.Controllers
         {
             // Get the current user before signing out
             var user = await _userManager.GetUserAsync(User);
-            
+
             await _signInManager.SignOutAsync();
-            
+
             if (user != null)
             {
-                var customUser = _context.Users.FirstOrDefault(u => u.Email == user.Email);
+                var customUser = await _sharedAuthService.GetUserByEmailAsync(user.Email);
                 if (customUser != null)
                 {
                     // Log the logout
-                    await _auditService.LogActivityAsync("User Logout", $"User {user.Email} logged out", customUser.Id);
+                    await _sharedAuthService.LogUserActivityAsync(customUser.Id, "User Logout",
+                        $"User {user.Email} logged out", "Web");
                 }
             }
-            
+
             return RedirectToAction("Index", "Home");
         }
 
@@ -182,7 +208,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
                 return NotFound();
             }
 
-            var customUser = _context.Users.FirstOrDefault(u => u.Email == user.Email);
+            var customUser = await _sharedAuthService.GetUserByEmailAsync(user.Email);
             if (customUser == null)
             {
                 return NotFound();
@@ -213,7 +239,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
                 return NotFound();
             }
 
-            var customUser = _context.Users.FirstOrDefault(u => u.Email == user.Email);
+            var customUser = await _sharedAuthService.GetUserByEmailAsync(user.Email);
             if (customUser == null)
             {
                 return NotFound();
@@ -221,7 +247,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
 
             // Update custom user
             customUser.Name = model.Name;
-            
+
             // Only update email if it has changed
             if (customUser.Email != model.Email)
             {
@@ -255,7 +281,8 @@ namespace RentalEquipmentManagementWebApp.Controllers
             await _context.SaveChangesAsync();
 
             // Log the profile update
-            await _auditService.LogActivityAsync("Profile Update", $"User {customUser.Email} updated their profile", customUser.Id);
+            await _sharedAuthService.LogUserActivityAsync(customUser.Id, "Profile Update",
+                $"User {customUser.Email} updated their profile", "Web");
 
             // If password is provided, update it
             if (!string.IsNullOrEmpty(model.NewPassword))
@@ -270,13 +297,14 @@ namespace RentalEquipmentManagementWebApp.Controllers
                     return View(model);
                 }
 
-                // Update custom user password hash
-                customUser.PasswordHash = _userManager.PasswordHasher.HashPassword(user, model.NewPassword);
+                // Update custom user password hash using shared service
+                customUser.PasswordHash = await _sharedAuthService.HashPasswordAsync(model.NewPassword, customUser);
                 _context.Update(customUser);
                 await _context.SaveChangesAsync();
 
                 // Log the password change
-                await _auditService.LogActivityAsync("Password Change", $"User {customUser.Email} changed their password", customUser.Id);
+                await _sharedAuthService.LogUserActivityAsync(customUser.Id, "Password Change",
+                    $"User {customUser.Email} changed their password", "Web");
 
                 // Re-sign in the user
                 await _signInManager.SignInAsync(user, isPersistent: false);

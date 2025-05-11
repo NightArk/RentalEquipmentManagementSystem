@@ -170,7 +170,7 @@ namespace RentalEquipmentManagementApp
 
                         if (changed)
                         {
-                            _authService.LogAccess(
+                            _authService.LogAccessAsync(
                                 _currentUser.Id,
                                 "Update Return Record",
                                 $"Return Record ID: {id}\n{changes}");
@@ -210,7 +210,7 @@ namespace RentalEquipmentManagementApp
                 {
                     _context.ReturnRecords.Remove(record);
                     _context.SaveChanges();
-                    _authService.LogAccess(
+                    _authService.LogAccessAsync(
                         _currentUser.Id,
                         "Deleted Return Record",
                         $"Return Record ID: {returnRecordId}"

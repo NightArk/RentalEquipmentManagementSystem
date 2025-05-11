@@ -110,7 +110,7 @@ namespace RentalEquipmentManagementApp
                 _context.ReturnRecords.Add(returnRecord);
                 _context.SaveChanges();
 
-                _authService.LogAccess(
+                _authService.LogAccessAsync(
                     _currentUser.Id,
                     "Added Return Record",
                     $"Return Record ID: {returnRecord.Id}"

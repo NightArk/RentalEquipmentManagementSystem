@@ -31,7 +31,11 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+// Add this to the existing service registrations
+builder.Services.AddScoped<RentalEquipmentManagementLogic.ISharedAuthenticationService,
+    RentalEquipmentManagementLogic.SharedAuthenticationService>();
 
+// The rest of your Program.cs remains the same
 // Ensure Identity database is created
 using (var scope = builder.Services.BuildServiceProvider().CreateScope())
 {

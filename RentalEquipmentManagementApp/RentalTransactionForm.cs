@@ -322,7 +322,7 @@ namespace RentalEquipmentManagementApp
                         {
                             _context.SaveChanges();
 
-                            _authService.LogAccess(
+                            _authService.LogAccessAsync(
                                 _currentUser.Id,
                                 "Updated Rental Transaction",
                                 $"Transaction ID {id}"
@@ -440,7 +440,7 @@ namespace RentalEquipmentManagementApp
                     _context.RentalTransactions.Remove(transaction);
                     _context.SaveChanges();
 
-                    _authService.LogAccess(
+                    _authService.LogAccessAsync(
                         _currentUser.Id,
                         "Deleted Rental Transaction",
                         $"Transaction ID {transactionId}"

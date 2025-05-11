@@ -1,34 +1,26 @@
 ﻿using RentalEquipmentManagementLogic;
 using RentalEquipmentManagementLogic.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
-
 
 namespace RentalEquipmentManagementApp
 {
     public class AuthService
     {
-        private readonly EquipmentRentalDBContext _context;
+        private readonly ISharedAuthenticationService _sharedAuthService;
 
         public AuthService(EquipmentRentalDBContext context)
         {
-            _context = context;
+            _sharedAuthService = new SharedAuthenticationService(context);
         }
 
-        public UserDto? Authenticate(string email, string password)
+        public async Task<UserDto?> AuthenticateAsync(string email, string password)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Email == email);
-            if (user == null) return null;
-
-            var hasher = new PasswordHasher<User>();
-            var result = hasher.VerifyHashedPassword(user, user.PasswordHash, password);
-
-            if (result == PasswordVerificationResult.Failed)
+            if (!await _sharedAuthService.ValidatePasswordAsync(email, password))
                 return null;
+
+            var user = await _sharedAuthService.GetUserByEmailAsync(email);
+            if (user == null) return null;
 
             return new UserDto
             {
@@ -39,17 +31,9 @@ namespace RentalEquipmentManagementApp
             };
         }
 
-        public void LogAccess(int userId, string action, string affectedData)
+        public async Task LogAccessAsync(int userId, string action, string affectedData)
         {
-            _context.Logs.Add(new Log
-            {
-                UserId = userId,
-                Action = action,
-                Timestamp = DateTime.Now,
-                AffectedData = affectedData,
-                Source = "Desktop"
-            });
-            _context.SaveChanges();
+            await _sharedAuthService.LogUserActivityAsync(userId, action, affectedData, "Desktop");
         }
     }
 }
