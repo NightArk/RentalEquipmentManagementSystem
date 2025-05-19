@@ -1,4 +1,5 @@
-﻿using RentalEquipmentManagementLogic;
+﻿using Microsoft.EntityFrameworkCore;
+using RentalEquipmentManagementLogic;
 using RentalEquipmentManagementLogic.Models;
 using System;
 using System.Threading.Tasks;
@@ -8,6 +9,8 @@ namespace RentalEquipmentManagementApp
     public class AuthService
     {
         private readonly ISharedAuthenticationService _sharedAuthService;
+        private readonly EquipmentRentalDBContext _context;
+
 
         public AuthService(EquipmentRentalDBContext context)
         {
@@ -34,6 +37,19 @@ namespace RentalEquipmentManagementApp
         public async Task LogAccessAsync(int userId, string action, string affectedData)
         {
             await _sharedAuthService.LogUserActivityAsync(userId, action, affectedData, "Desktop");
+        }
+
+        public void LogAccess(int userId, string action, string affectedData)
+        {
+            _context.Logs.Add(new Log
+            {
+                UserId = userId,
+                Action = action,
+                Timestamp = DateTime.Now,
+                AffectedData = affectedData,
+                Source = "Desktop"
+            });
+            _context.SaveChanges();
         }
     }
 }

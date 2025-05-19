@@ -253,7 +253,7 @@ namespace RentalEquipmentManagementApp
             LoadTransactionData();
         }
 
-        private void btnUpdate_Click(object sender, EventArgs e)
+        private async void btnUpdate_Click(object sender, EventArgs e)
         {
             try
             {
@@ -285,6 +285,7 @@ namespace RentalEquipmentManagementApp
                         }
 
                         bool changed = false;
+
                         if (transaction.ActualRentalStartDate != newStart)
                         {
                             transaction.ActualRentalStartDate = newStart;
@@ -320,9 +321,9 @@ namespace RentalEquipmentManagementApp
 
                         if (changed)
                         {
-                            _context.SaveChanges();
+                            await _context.SaveChangesAsync();
 
-                            _authService.LogAccessAsync(
+                            await _authService.LogAccessAsync(
                                 _currentUser.Id,
                                 "Updated Rental Transaction",
                                 $"Transaction ID {id}"
@@ -330,6 +331,7 @@ namespace RentalEquipmentManagementApp
                         }
                     }
                 }
+
                 MessageBox.Show("Updated successfully.");
                 LoadTransactionData();
             }
@@ -338,6 +340,7 @@ namespace RentalEquipmentManagementApp
                 MessageBox.Show("Error during update: " + ex.Message);
             }
         }
+
 
         private void dgvTransaction_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {

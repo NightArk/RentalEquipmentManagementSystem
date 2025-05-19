@@ -182,7 +182,7 @@ namespace RentalEquipmentManagementApp
             dgvRequests.Columns["TotalCost"].ReadOnly = false;
         }
 
-        private void btnUpdate_Click_1(object sender, EventArgs e)
+        private async void btnUpdate_Click_1(object sender, EventArgs e)
         {
             try
             {
@@ -247,10 +247,9 @@ namespace RentalEquipmentManagementApp
                             changed = true;
                         }
 
-                        // Only log if something actually changed
                         if (changed)
                         {
-                            _authService.LogAccessAsync(
+                            await _authService.LogAccessAsync(
                                 _currentUser.Id,
                                 "Updated Rental Request",
                                 $"Request ID {id}\n{changes}"
@@ -259,7 +258,7 @@ namespace RentalEquipmentManagementApp
                     }
                 }
 
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 MessageBox.Show("All valid changes saved successfully.");
                 ReftereshData();
             }
@@ -268,6 +267,7 @@ namespace RentalEquipmentManagementApp
                 MessageBox.Show("Error saving changes: " + ex.Message);
             }
         }
+
 
 
         private void dgvRequests_CellClick(object sender, DataGridViewCellEventArgs e)

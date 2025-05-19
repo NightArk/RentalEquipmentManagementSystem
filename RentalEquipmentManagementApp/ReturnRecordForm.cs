@@ -111,7 +111,7 @@ namespace RentalEquipmentManagementApp
             LoadReturnRecordsData();
         }
 
-        private void btnUpdate_Click(object sender, EventArgs e)
+        private async void btnUpdate_Click(object sender, EventArgs e)
         {
             try
             {
@@ -130,7 +130,6 @@ namespace RentalEquipmentManagementApp
                         decimal newLateFee = row.Cells["LateReturnFee"].Value != null ? Convert.ToDecimal(row.Cells["LateReturnFee"].Value) : 0;
                         decimal newAdditionalCharges = row.Cells["AdditionalCharges"].Value != null ? Convert.ToDecimal(row.Cells["AdditionalCharges"].Value) : 0;
 
-
                         if (newLateFee < 0 || newAdditionalCharges < 0)
                         {
                             MessageBox.Show("Late fee and additional charges must be positive.");
@@ -143,34 +142,34 @@ namespace RentalEquipmentManagementApp
                         if (record.ActualReturnDate != newReturnDate)
                         {
                             record.ActualReturnDate = newReturnDate;
-                            changes.AppendLine($"Actual Return Date changed.");
+                            changes.AppendLine("Actual Return Date changed.");
                             changed = true;
                         }
 
                         if (record.ReturnCondition != newCondition)
                         {
                             record.ReturnCondition = newCondition;
-                            changes.AppendLine($"Return Condition changed.");
+                            changes.AppendLine("Return Condition changed.");
                             changed = true;
                         }
 
                         if (record.LateReturnFee != newLateFee)
                         {
                             record.LateReturnFee = newLateFee;
-                            changes.AppendLine($"Late Return Fee changed.");
+                            changes.AppendLine("Late Return Fee changed.");
                             changed = true;
                         }
 
                         if (record.AdditionalCharges != newAdditionalCharges)
                         {
                             record.AdditionalCharges = newAdditionalCharges;
-                            changes.AppendLine($"Additional Charges changed.");
+                            changes.AppendLine("Additional Charges changed.");
                             changed = true;
                         }
 
                         if (changed)
                         {
-                            _authService.LogAccessAsync(
+                            await _authService.LogAccessAsync(
                                 _currentUser.Id,
                                 "Update Return Record",
                                 $"Return Record ID: {id}\n{changes}");
@@ -178,7 +177,7 @@ namespace RentalEquipmentManagementApp
                     }
                 }
 
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 MessageBox.Show("All valid changes saved successfully.");
                 LoadReturnRecordsData();
             }
@@ -187,6 +186,7 @@ namespace RentalEquipmentManagementApp
                 MessageBox.Show("Error saving changes: " + ex.Message);
             }
         }
+
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
