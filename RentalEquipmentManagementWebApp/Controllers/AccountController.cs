@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using RentalEquipmentManagementLogic;
 using RentalEquipmentManagementLogic.Models;
 using RentalEquipmentManagementWebApp.Models.Account;
+using RentalEquipmentManagementWebApp.Models.Admin;
 using RentalEquipmentManagementWebApp.Services;
 
 namespace RentalEquipmentManagementWebApp.Controllers
@@ -313,5 +315,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
             TempData["StatusMessage"] = "Your profile has been updated";
             return RedirectToAction(nameof(Profile));
         }
+
+      
     }
 }

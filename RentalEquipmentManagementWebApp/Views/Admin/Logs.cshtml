@@ -70,9 +70,9 @@
                     <i class="bi bi-download me-1"></i> Export
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-1"></i> Excel</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-text me-1"></i> CSV</a></li>
+                    <li><a class="dropdown-item" href="@Url.Action("ExportLogsAsExcel", new { startDate = Context.Request.Query["startDate"], endDate = Context.Request.Query["endDate"], actionType = Context.Request.Query["actionType"], userId = Context.Request.Query["userId"] })"><i class="bi bi-file-earmark-excel me-1"></i> Excel</a></li>
+                    <li><a class="dropdown-item" href="@Url.Action("ExportLogsAsPDF", new { startDate = Context.Request.Query["startDate"], endDate = Context.Request.Query["endDate"], actionType = Context.Request.Query["actionType"], userId = Context.Request.Query["userId"] })"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</a></li>
+                    <li><a class="dropdown-item" href="@Url.Action("ExportLogsAsCSV", new { startDate = Context.Request.Query["startDate"], endDate = Context.Request.Query["endDate"], actionType = Context.Request.Query["actionType"], userId = Context.Request.Query["userId"] })"><i class="bi bi-file-earmark-text me-1"></i> CSV</a></li>
                 </ul>
             </div>
         </div>

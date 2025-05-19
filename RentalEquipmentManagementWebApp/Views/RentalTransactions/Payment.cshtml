@@ -1,0 +1,52 @@
+﻿@model RentalEquipmentManagementWebApp.Models.RentalTransaction.RentalTransactionViewModel
+
+@{
+    ViewData["Title"] = "Payment Confirmation";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Confirm Payment</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Please confirm payment for the following rental:</strong>
+                    </div>
+                    <div class="mb-3">
+                        <p><strong>Customer:</strong> @Model.CustomerName</p>
+                        <p><strong>Equipment:</strong> @Model.EquipmentName</p>
+                        <p><strong>Rental Start Date:</strong> @Model.ActualRentalStartDate.ToShortDateString()</p>
+                        <p><strong>Return Date:</strong> @Model.ReturnDate.ToShortDateString()</p>
+                        <p><strong>Rental Fee:</strong> $@Model.RentalFee</p>
+                        <p><strong>Deposit:</strong> $@Model.Deposit</p>
+                        <p><strong>Status:</strong> @Model.PaymentStatus</p>
+                    </div>
+
+                    <form asp-action="Payment" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+                        <div class="mb-3">
+                            <label for="PaymentMethod" class="form-label"><strong>Payment Method</strong></label>
+                            <select class="form-select" id="PaymentMethod" name="PaymentMethod" required>
+                                <option value="">-- Select Payment Method --</option>
+                                <option value="Credit Card">Credit Card</option>
+                                <option value="Debit Card">Debit Card</option>
+                                <option value="Bank Transfer">BenefitPay</option>
+                                <option value="Paypal">Paypal</option>
+                            </select>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-success">Confirm Payment</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

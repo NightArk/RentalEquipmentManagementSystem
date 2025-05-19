@@ -5,20 +5,20 @@ namespace RentalEquipmentManagementWebApp.Models.RentalTransaction
 {
     public class RentalTransactionCreateViewModel
     {
-        public int Id { get; set; } // Add Id for Edit
+       
 
         [Required(ErrorMessage = "Rental Request is required.")]
         public int RentalRequestId { get; set; }
-        public string RentalRequestName { get; set; } // Add this
+       
 
         [Required(ErrorMessage = "Assigned Equipment ID is required.")]
         public int AssignedEquipmentId { get; set; }
-        public string AssignedEquipmentName { get; set; }  // Add this
+        
 
         // Add CustomerId
         [Required(ErrorMessage = "Customer ID is required.")]
         public int CustomerId { get; set; }
-        public string CustomerName { get; set; } // Add this
+        
 
         [Required(ErrorMessage = "Start Date is required.")]
         public DateTime ActualRentalStartDate { get; set; }

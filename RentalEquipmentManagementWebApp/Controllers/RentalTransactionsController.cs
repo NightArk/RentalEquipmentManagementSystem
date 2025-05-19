@@ -1,21 +1,28 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RentalEquipmentManagementLogic.Models;
 using RentalEquipmentManagementWebApp.Models.RentalTransaction;
+using RentalEquipmentManagementWebApp.Services;
 
 namespace RentalEquipmentManagementWebApp.Controllers
 {
+    [Authorize(Policy = "RequireAuthenticated")]
     public class RentalTransactionsController : Controller
     {
         private readonly EquipmentRentalDBContext _context;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IAuditService _auditService;
+        private readonly INotificationService _notificationService;
 
-        public RentalTransactionsController(EquipmentRentalDBContext context, UserManager<IdentityUser> userManager)
+        public RentalTransactionsController(EquipmentRentalDBContext context, UserManager<IdentityUser> userManager, IAuditService auditService, INotificationService notificationService)
         {
             _context = context;
             _userManager = userManager;
+            _auditService = auditService;
+            _notificationService = notificationService;
         }
 
         // GET: RentalTransactions
@@ -25,17 +32,31 @@ namespace RentalEquipmentManagementWebApp.Controllers
                 .Include(r => r.RentalRequest)
                     .ThenInclude(rr => rr.Customer)
                 .Include(r => r.AssignedEquipment)
-                .Include(r => r.Documents) // Include documents
+                .Include(r => r.Documents)
                 .AsQueryable();
 
-            // Filter by customer name
-            if (!string.IsNullOrEmpty(customerNameSearch))
+            // If the user is in the Customer role, only show their own rental transactions
+            if (User.IsInRole("Customer"))
             {
-                rentalTransactionsQuery = rentalTransactionsQuery
-                    .Where(r => r.RentalRequest.Customer.Name.Contains(customerNameSearch));
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser != null)
+                {
+                    var userEmail = currentUser.Email;
+                    rentalTransactionsQuery = rentalTransactionsQuery
+                        .Where(r => r.RentalRequest.Customer.Email == userEmail);
+                }
+            }
+            else
+            {
+                // Filter by customer name (only for Admin/Manager)
+                if (!string.IsNullOrEmpty(customerNameSearch))
+                {
+                    rentalTransactionsQuery = rentalTransactionsQuery
+                        .Where(r => r.RentalRequest.Customer.Name.Contains(customerNameSearch));
+                }
             }
 
-            // Filter by payment status
+            // Filter by payment status (for all roles)
             if (!string.IsNullOrEmpty(paymentStatusFilter))
             {
                 rentalTransactionsQuery = rentalTransactionsQuery
@@ -72,7 +93,9 @@ namespace RentalEquipmentManagementWebApp.Controllers
         }
 
 
+
         // GET: RentalTransaction/Create
+        [Authorize(Policy = "RequireManagerRole")]
         public IActionResult Create()
         {
             // Get rental requests
@@ -99,8 +122,8 @@ namespace RentalEquipmentManagementWebApp.Controllers
 
 
 
-        // POST: RentalTransaction/Create
         [HttpPost]
+        [Authorize(Policy = "RequireManagerRole")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(RentalTransactionCreateViewModel model)
         {
@@ -129,7 +152,6 @@ namespace RentalEquipmentManagementWebApp.Controllers
                         CustomerId = model.CustomerId
                     };
 
-                    // Save rental transaction to DB
                     _context.RentalTransactions.Add(rentalTransaction);
                     await _context.SaveChangesAsync();
 
@@ -140,12 +162,11 @@ namespace RentalEquipmentManagementWebApp.Controllers
                         foreach (var file in model.Files)
                         {
                             string fileType = file.ContentType;
-                            // Check the length of the file type.  Use a constant for max length
                             const int maxFileTypeLength = 255;
                             if (fileType.Length > maxFileTypeLength)
                             {
-                                fileType = fileType.Substring(0, maxFileTypeLength); // Truncate to maxFileTypeLength characters
-                                Console.WriteLine($"File type was truncated to: {fileType}.  Truncated value: {fileType}"); // Include truncated value in log
+                                fileType = fileType.Substring(0, maxFileTypeLength);
+                                Console.WriteLine($"File type was truncated to: {fileType}.");
                             }
                             Console.WriteLine($"Processing file: {file.FileName}, ContentType: {fileType}, Length: {file.Length} bytes");
                             var document = new Document
@@ -157,7 +178,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
                                 UploadedAt = DateTime.Now
                             };
                             _context.Documents.Add(document);
-                            Console.WriteLine($"Document object created for file: {file.FileName}.  Added to context.");
+                            Console.WriteLine($"Document object created for file: {file.FileName}. Added to context.");
                         }
                         await _context.SaveChangesAsync();
                         Console.WriteLine("SaveChangesAsync for Documents completed successfully.");
@@ -167,13 +188,40 @@ namespace RentalEquipmentManagementWebApp.Controllers
                         Console.WriteLine("No files to process.");
                     }
 
+                    // --- ADD AUDIT LOG & NOTIFICATIONS ---
+                    var currentUserEmail = User.Identity?.Name;
+                    var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == currentUserEmail);
+                    if (currentUser != null)
+                    {
+                        await _auditService.LogActivityAsync(
+                            "Rental Transaction Creation",
+                            $"Rental transaction ID '{rentalTransaction.Id}' created for Rental Request ID '{model.RentalRequestId}'.",
+                            currentUser.Id
+                        );
+
+                        // Notify current user (manager)
+                        await _notificationService.CreateNotificationAsync(
+                            currentUser.Id,
+                            "Rental Transaction Created",
+                            $"You created a new rental transaction ID '{rentalTransaction.Id}'."
+                        );
+
+                        // Notify the customer
+                        await _notificationService.CreateNotificationAsync(
+                            (int)rentalTransaction.CustomerId,
+                            "Rental Transaction Created",
+                            $"A rental transaction has been created for your request ID '{model.RentalRequestId}'."
+                        );
+                    }
+                    // ---------------------------------------
+
+                    TempData["SuccessMessage"] = "Rental transaction created successfully.";
                     Console.WriteLine("Redirecting to Index action.");
-                    // Redirect to the Index or another action as required
                     return RedirectToAction(nameof(Index));
                 }
                 else
                 {
-                    Console.WriteLine("Model is invalid.  Dumping ModelState errors:");
+                    Console.WriteLine("Model is invalid. Dumping ModelState errors:");
                     foreach (var keyValuePair in ModelState)
                     {
                         var key = keyValuePair.Key;
@@ -187,7 +235,6 @@ namespace RentalEquipmentManagementWebApp.Controllers
                     Console.WriteLine("Returning to View with model errors.");
                 }
 
-                // Reload the dropdowns if validation fails
                 ViewBag.RentalRequests = new SelectList(
                     _context.RentalRequests.Include(r => r.Customer),
                     "Id",
@@ -200,17 +247,14 @@ namespace RentalEquipmentManagementWebApp.Controllers
             }
             catch (Exception ex)
             {
-                // Log the error (consider using a proper logging framework)
                 Console.WriteLine($"Error in Create action: {ex.Message}");
                 if (ex.InnerException != null)
                 {
                     Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
                 }
 
-                // Optionally, you can add a model error to display on the page
                 ModelState.AddModelError(string.Empty, "An error occurred while creating the rental transaction. Please try again.");
 
-                // Reload the dropdowns if an error occurs
                 ViewBag.RentalRequests = new SelectList(
                     _context.RentalRequests.Include(r => r.Customer),
                     "Id",
@@ -222,6 +266,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
                 return View(model);
             }
         }
+
 
         private async Task<byte[]> ConvertFileToBytes(IFormFile file)
         {
@@ -251,16 +296,6 @@ namespace RentalEquipmentManagementWebApp.Controllers
                 return null;
             }
         }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -303,79 +338,70 @@ namespace RentalEquipmentManagementWebApp.Controllers
 
 
         // GET: RentalTransaction/Edit/5
+        [Authorize(Policy = "RequireManagerRole")]
         public async Task<IActionResult> Edit(int? id)
         {
-            Console.WriteLine($"Entering Edit action with id: {id}");
-            if (id == null)
-            {
-                Console.WriteLine("ID is null. Returning NotFound.");
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var rentalTransaction = await _context.RentalTransactions
                 .Include(r => r.RentalRequest)
                 .Include(r => r.AssignedEquipment)
-                .Include(r => r.Customer) // Include the Customer
+                .Include(r => r.Customer)
+                .Include(r => r.Documents)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (rentalTransaction == null)
-            {
-                Console.WriteLine("RentalTransaction not found. Returning NotFound.");
-                return NotFound();
-            }
 
-            // Populate the view model
-            var model = new RentalTransactionCreateViewModel
+            if (rentalTransaction == null) return NotFound();
+
+            // Populate ViewBag with display names
+            ViewBag.CustomerName = rentalTransaction.Customer?.Name;
+            ViewBag.RentalRequestId = rentalTransaction.RentalRequestId;
+            ViewBag.AssignedEquipmentName = rentalTransaction.AssignedEquipment?.Name;
+
+            var model = new RentalTransactionEditViewModel
             {
+                Id = rentalTransaction.Id,
                 RentalRequestId = (int)rentalTransaction.RentalRequestId,
                 AssignedEquipmentId = (int)rentalTransaction.AssignedEquipmentId,
-                CustomerId = (int)rentalTransaction.CustomerId, // Pass CustomerId to the model
+                CustomerId = (int)rentalTransaction.CustomerId,
                 ActualRentalStartDate = rentalTransaction.ActualRentalStartDate,
                 ReturnDate = rentalTransaction.ReturnDate,
                 RentalPeriod = rentalTransaction.RentalPeriod,
                 RentalFee = rentalTransaction.RentalFee,
                 Deposit = rentalTransaction.Deposit,
                 PaymentStatus = rentalTransaction.PaymentStatus,
-                //IsRentalRequestIdReadonly = true, // These properties are not in RentalTransactionCreateViewModel
-                //IsAssignedEquipmentIdReadonly = true,
-                //IsCustomerIdReadonly = true,
-                Files = null // Initialize Files property
+                ExistingDocuments = rentalTransaction.Documents.Select(d => new DocumentViewModel
+                {
+                    Id = d.Id,
+                    FileName = d.FileName,
+                    FileType = d.FileType,
+                    UploadedAt = (DateTime)d.UploadedAt
+                }).ToList()
             };
 
-            // Load related data for dropdowns
-            ViewBag.RentalRequests = new SelectList(_context.RentalRequests.Include(r => r.Customer), "Id", "Customer.Name", rentalTransaction.RentalRequestId);
-            ViewBag.Equipments = new SelectList(_context.Equipment, "Id", "Name", rentalTransaction.AssignedEquipmentId);
-            Console.WriteLine("Returning Edit view with populated model.");
             return View(model);
         }
 
-        // POST: RentalTransaction/Edit/5
         [HttpPost]
+        [Authorize(Policy = "RequireManagerRole")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, RentalTransactionCreateViewModel model)
+        public async Task<IActionResult> Edit(int id, RentalTransactionEditViewModel model)
         {
-            Console.WriteLine($"Entering Edit POST action with id: {id}");
-            if (id != model.Id)
-            {
-                Console.WriteLine("ID mismatch. Returning NotFound.");
-                return NotFound();
-            }
+            if (id != model.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    Console.WriteLine("Model is valid. Proceeding to update RentalTransaction.");
-                    var rentalTransaction = await _context.RentalTransactions.FindAsync(id);
-                    if (rentalTransaction == null)
-                    {
-                        Console.WriteLine("RentalTransaction not found. Returning NotFound.");
-                        return NotFound();
-                    }
+                    var rentalTransaction = await _context.RentalTransactions
+                        .Include(r => r.Documents)
+                        .Include(r => r.RentalRequest)
+                            .ThenInclude(rr => rr.Customer)
+                        .Include(r => r.AssignedEquipment)
+                        .FirstOrDefaultAsync(r => r.Id == id);
 
-                    //update the properties
-                    //rentalTransaction.RentalRequestId = model.RentalRequestId;  // Do not update these readonly fields.  These aren't readonly anymore.
-                    //rentalTransaction.AssignedEquipmentId = model.AssignedEquipmentId;  // Do not update these readonly fields.  These aren't readonly anymore.
-                    rentalTransaction.CustomerId = model.CustomerId;
+                    if (rentalTransaction == null) return NotFound();
+
+                    // Update editable fields
                     rentalTransaction.ActualRentalStartDate = model.ActualRentalStartDate;
                     rentalTransaction.ReturnDate = model.ReturnDate;
                     rentalTransaction.RentalPeriod = model.RentalPeriod;
@@ -383,71 +409,95 @@ namespace RentalEquipmentManagementWebApp.Controllers
                     rentalTransaction.Deposit = model.Deposit;
                     rentalTransaction.PaymentStatus = model.PaymentStatus;
 
-                    // Handle file uploads
+                    // File handling
                     if (model.Files != null && model.Files.Count > 0)
                     {
-                        Console.WriteLine($"Files found: {model.Files.Count}.  Processing files...");
-                        // Delete old documents.
-                        var existingDocuments = _context.Documents.Where(d => d.RentalTransactionId == id);
-                        _context.Documents.RemoveRange(existingDocuments);
+                        if (rentalTransaction.Documents.Any())
+                        {
+                            _context.Documents.RemoveRange(rentalTransaction.Documents);
+                        }
 
                         foreach (var file in model.Files)
                         {
-                            string fileType = file.ContentType;
-                            //check the length of the file type.
-                            const int maxFileTypeLength = 255;
-                            if (fileType.Length > maxFileTypeLength)
-                            {
-                                fileType = fileType.Substring(0, maxFileTypeLength); // Truncate to 255 characters
-                                Console.WriteLine($"File type was truncated to: {fileType}.  Truncated value: {fileType}");
-                            }
-                            Console.WriteLine($"Processing file: {file.FileName}, ContentType: {fileType}, Length: {file.Length} bytes");
                             var document = new Document
                             {
                                 RentalTransactionId = rentalTransaction.Id,
                                 FileName = file.FileName,
-                                FileType = fileType,
+                                FileType = file.ContentType.Length > 255
+                                    ? file.ContentType.Substring(0, 255)
+                                    : file.ContentType,
                                 FileData = await ConvertFileToBytes(file),
                                 UploadedAt = DateTime.Now
                             };
                             _context.Documents.Add(document);
-                            Console.WriteLine($"Document object created for file: {file.FileName}.  Added to context.");
                         }
-                        await _context.SaveChangesAsync();
-                        Console.WriteLine("SaveChangesAsync for Documents completed successfully.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("No files to process.");
                     }
 
                     _context.Update(rentalTransaction);
                     await _context.SaveChangesAsync();
-                    Console.WriteLine("RentalTransaction updated successfully.");
+
+                    // Get current user
+                    var userEmail = User.Identity?.Name;
+                    var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+
+                    if (currentUser != null)
+                    {
+                        // Audit log
+                        await _auditService.LogActivityAsync(
+                            "Rental Transaction Edited",
+                            $"Rental transaction (ID: {rentalTransaction.Id}) edited by {currentUser.Name}.",
+                            currentUser.Id
+                        );
+
+                        // Notify current user (manager/admin)
+                        await _notificationService.CreateNotificationAsync(
+                            currentUser.Id,
+                            "Rental Transaction Edited",
+                            $"You edited rental transaction ID {rentalTransaction.Id} for equipment '{rentalTransaction.AssignedEquipment?.Name}'."
+                        );
+
+                        // Notify customer
+                        if (rentalTransaction.RentalRequest?.Customer != null)
+                        {
+                            await _notificationService.CreateNotificationAsync(
+                                (int)rentalTransaction.RentalRequest.CustomerId,
+                                "Your Rental Transaction Was Updated",
+                                $"Your rental transaction (ID: {rentalTransaction.Id}) for equipment '{rentalTransaction.AssignedEquipment?.Name}' was updated by {currentUser.Name}."
+                            );
+                        }
+                    }
+
+                    // <-- Add TempData success message here -->
+                    TempData["SuccessMessage"] = $"Rental transaction ID {rentalTransaction.Id} was updated successfully.";
+
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!RentalTransactionExists(model.Id))
-                    {
-                        Console.WriteLine("RentalTransaction not found (concurrency error). Returning NotFound.");
-                        return NotFound();
-                    }
-                    else
-                    {
-                        Console.WriteLine("Concurrency error occurred. Throwing exception.");
-                        throw;
-                    }
+                    if (!RentalTransactionExists(model.Id)) return NotFound();
+                    throw;
                 }
-                Console.WriteLine("Redirecting to Index action.");
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, "An error occurred while saving.");
+                }
             }
-            // If we got this far, something failed, redisplay form with validation errors
-            // Reload dropdowns
-            ViewBag.RentalRequests = new SelectList(_context.RentalRequests.Include(r => r.Customer), "Id", "Customer.Name", model.RentalRequestId);
-            ViewBag.Equipments = new SelectList(_context.Equipment, "Id", "Name", model.AssignedEquipmentId);
-            Console.WriteLine("Returning to View with model errors.");
+
+            // Reload documents if validation fails
+            model.ExistingDocuments = await _context.Documents
+                .Where(d => d.RentalTransactionId == id)
+                .Select(d => new DocumentViewModel
+                {
+                    Id = d.Id,
+                    FileName = d.FileName,
+                    FileType = d.FileType,
+                    UploadedAt = (DateTime)d.UploadedAt
+                })
+                .ToListAsync();
+
             return View(model);
         }
+
 
         private bool RentalTransactionExists(int id)
         {
@@ -455,7 +505,248 @@ namespace RentalEquipmentManagementWebApp.Controllers
             return _context.RentalTransactions.Any(e => e.Id == id);
         }
 
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null) return NotFound();
 
+            var transaction = await _context.RentalTransactions
+                .Include(r => r.RentalRequest)
+                .Include(r => r.AssignedEquipment)
+                .Include(r => r.Customer)
+                .Include(r => r.Documents)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (transaction == null) return NotFound();
+
+            var viewModel = new RentalTransactionViewModel
+            {
+                Id = transaction.Id,
+                RentalRequestId = (int)transaction.RentalRequestId,
+                AssignedEquipmentId = (int)transaction.AssignedEquipmentId,
+                CustomerName = transaction.RentalRequest.Customer.Name,
+                EquipmentName = transaction.AssignedEquipment.Name,
+                ActualRentalStartDate = transaction.ActualRentalStartDate,
+                ReturnDate = transaction.ReturnDate,
+                RentalPeriod = transaction.RentalPeriod,
+                RentalFee = transaction.RentalFee,
+                Deposit = transaction.Deposit,
+                PaymentStatus = transaction.PaymentStatus,
+                CreatedAt = (DateTime)transaction.CreatedAt,
+                Documents = transaction.Documents.Select(d => new DocumentViewModel
+                {
+                    Id = d.Id,
+                    FileName = d.FileName,
+                    FileType = d.FileType,
+                    UploadedAt = (DateTime)d.UploadedAt
+                }).ToList()
+            };
+
+            return View(viewModel);
+        }
+
+
+        // GET: RentalTransaction/Delete/5
+        [Authorize(Policy = "RequireManagerRole")]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var rentalTransaction = await _context.RentalTransactions
+                .Include(r => r.RentalRequest)
+                .ThenInclude(rr => rr.Customer)
+                .Include(r => r.AssignedEquipment)
+                .Include(r => r.Documents)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (rentalTransaction == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = new RentalTransactionViewModel
+            {
+                Id = rentalTransaction.Id,
+                RentalRequestId = (int)rentalTransaction.RentalRequestId,
+                CustomerName = rentalTransaction.RentalRequest.Customer.Name,
+                EquipmentName = rentalTransaction.AssignedEquipment.Name,
+                ActualRentalStartDate = rentalTransaction.ActualRentalStartDate,
+                ReturnDate = rentalTransaction.ReturnDate,
+                RentalPeriod = rentalTransaction.RentalPeriod,
+                RentalFee = rentalTransaction.RentalFee,
+                Deposit = rentalTransaction.Deposit,
+                PaymentStatus = rentalTransaction.PaymentStatus,
+                CreatedAt = (DateTime)rentalTransaction.CreatedAt,
+                Documents = rentalTransaction.Documents.Select(d => new DocumentViewModel
+                {
+                    Id = d.Id,
+                    FileName = d.FileName,
+                    FileType = d.FileType,
+                    UploadedAt = (DateTime)d.UploadedAt
+                }).ToList()
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: RentalTransaction/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [Authorize(Policy = "RequireManagerRole")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var rentalTransaction = await _context.RentalTransactions
+                .Include(r => r.RentalRequest)
+                    .ThenInclude(rr => rr.Customer)
+                .Include(r => r.AssignedEquipment)
+                .Include(r => r.Documents)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (rentalTransaction == null)
+            {
+                TempData["ErrorMessage"] = "Rental transaction not found.";
+                return NotFound();
+            }
+
+            var userEmail = User.Identity?.Name;
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+
+            if (currentUser == null)
+            {
+                TempData["ErrorMessage"] = "Current user not found.";
+                return NotFound();
+            }
+
+            try
+            {
+                // Remove associated documents first
+                if (rentalTransaction.Documents.Any())
+                {
+                    _context.Documents.RemoveRange(rentalTransaction.Documents);
+                }
+
+                _context.RentalTransactions.Remove(rentalTransaction);
+                await _context.SaveChangesAsync();
+
+                // Log audit
+                await _auditService.LogActivityAsync(
+                    "Rental Transaction Deleted",
+                    $"Rental transaction (ID: {rentalTransaction.Id}) was deleted by {currentUser.Name}.",
+                    currentUser.Id
+                );
+
+                // Notify customer
+                if (rentalTransaction.RentalRequest?.Customer != null)
+                {
+                    await _notificationService.CreateNotificationAsync(
+                        (int)rentalTransaction.RentalRequest.CustomerId,
+                        "Rental Transaction Deleted",
+                        $"Your rental transaction for equipment '{rentalTransaction.AssignedEquipment?.Name}' has been deleted by {currentUser.Name}."
+                    );
+                }
+
+                // Notify the manager who deleted it
+                await _notificationService.CreateNotificationAsync(
+                    currentUser.Id,
+                    "You Deleted a Rental Transaction",
+                    $"You deleted rental transaction (ID: {rentalTransaction.Id}) for equipment '{rentalTransaction.AssignedEquipment?.Name}'."
+                );
+
+                TempData["SuccessMessage"] = "Rental transaction deleted successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"Delete failed: {ex.Message}");
+                ModelState.AddModelError("", "Unable to delete. This transaction might have related data.");
+
+                return View(await _context.RentalTransactions
+                    .Include(r => r.RentalRequest)
+                        .ThenInclude(rr => rr.Customer)
+                    .Include(r => r.AssignedEquipment)
+                    .FirstOrDefaultAsync(m => m.Id == id));
+            }
+        }
+
+
+
+        // GET: RentalTransaction/Payment/5
+        public async Task<IActionResult> Payment(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var rentalTransaction = await _context.RentalTransactions
+                .Include(r => r.RentalRequest)
+                    .ThenInclude(rr => rr.Customer)
+                .Include(r => r.AssignedEquipment)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (rentalTransaction == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = new RentalTransactionViewModel
+            {
+                Id = rentalTransaction.Id,
+                CustomerName = rentalTransaction.RentalRequest.Customer.Name,
+                EquipmentName = rentalTransaction.AssignedEquipment.Name,
+                ActualRentalStartDate = rentalTransaction.ActualRentalStartDate,
+                ReturnDate = rentalTransaction.ReturnDate,
+                RentalFee = rentalTransaction.RentalFee,
+                Deposit = rentalTransaction.Deposit,
+                PaymentStatus = rentalTransaction.PaymentStatus
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: RentalTransaction/Payment
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Payment(int id)
+        {
+            var rentalTransaction = await _context.RentalTransactions
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (rentalTransaction == null)
+            {
+                return NotFound();
+            }
+
+            // Update payment status based on return date
+            if (rentalTransaction.ReturnDate < DateTime.Today)
+            {
+                rentalTransaction.PaymentStatus = "Overdue";
+            }
+            else
+            {
+                rentalTransaction.PaymentStatus = "Paid";
+            }
+
+            _context.Update(rentalTransaction);
+            await _context.SaveChangesAsync();
+
+            // Add success message
+            TempData["SuccessMessage"] = "Payment processed successfully!";
+
+            return RedirectToAction(nameof(Index));
+        }
+    
+
+    
+        private async Task<int?> GetCurrentUserId()
+        {
+            var userEmail = User.Identity?.Name;
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+            return currentUser?.Id;
+        }
 
     }
 }
+

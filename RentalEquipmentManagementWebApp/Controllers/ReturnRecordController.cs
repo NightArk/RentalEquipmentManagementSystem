@@ -10,24 +10,21 @@ using RentalEquipmentManagementWebApp.Services;
 
 namespace RentalEquipmentManagementWebApp.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "RequireAuthenticated")]
     public class ReturnRecordController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
         private readonly EquipmentRentalDBContext _context;
         private readonly IAuditService _auditService;
+        private readonly INotificationService _notificationService;
 
-        public ReturnRecordController(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
-            EquipmentRentalDBContext context,
-            IAuditService auditService)
+
+        public ReturnRecordController(UserManager<IdentityUser> userManager, EquipmentRentalDBContext context, IAuditService auditService, INotificationService notificationService)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
             _context = context;
             _auditService = auditService;
+            _notificationService = notificationService;
         }
 
         public async Task<IActionResult> Index()
@@ -194,8 +191,9 @@ namespace RentalEquipmentManagementWebApp.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "RequireManagerRole")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateReturnRecordViewModel viewModel) // Removed [Bind] attribute
+        public async Task<IActionResult> Create(CreateReturnRecordViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
@@ -211,6 +209,44 @@ namespace RentalEquipmentManagementWebApp.Controllers
 
                 _context.Add(returnRecord);
                 await _context.SaveChangesAsync();
+
+                // Get current user
+                var userEmail = User.Identity?.Name;
+                var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+
+                // Load rental transaction with customer
+                var rentalTransaction = await _context.RentalTransactions
+                    .Include(rt => rt.Customer)
+                    .FirstOrDefaultAsync(rt => rt.Id == returnRecord.RentalTransactionId);
+
+                if (currentUser != null)
+                {
+                    // Audit log
+                    await _auditService.LogActivityAsync(
+                        "Return Record Created",
+                        $"Return record ID {returnRecord.Id} was created by {currentUser.Name}.",
+                        currentUser.Id
+                    );
+
+                    // Notify current user (manager/admin)
+                    await _notificationService.CreateNotificationAsync(
+                        currentUser.Id,
+                        "Return Record Created",
+                        $"You created return record ID {returnRecord.Id}."
+                    );
+
+                    // Notify customer
+                    if (rentalTransaction?.Customer != null)
+                    {
+                        await _notificationService.CreateNotificationAsync(
+                            rentalTransaction.Customer.Id,
+                            "New Return Record Created",
+                            $"A return record (ID: {returnRecord.Id}) has been created for your rental transaction."
+                        );
+                    }
+                }
+
+                TempData["SuccessMessage"] = $"Return record ID {returnRecord.Id} created successfully.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -227,7 +263,8 @@ namespace RentalEquipmentManagementWebApp.Controllers
             return View(viewModel);
         }
 
-        [Authorize(Roles = "Manager,Administrator")]
+
+        [Authorize(Policy = "RequireManagerRole")]
         // GET: ReturnRecords/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -270,11 +307,11 @@ namespace RentalEquipmentManagementWebApp.Controllers
             return View(viewModel);
         }
 
-        [Authorize(Roles = "Manager,Administrator")]
+        [Authorize(Policy = "RequireManagerRole")]
         // POST: ReturnRecords/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, CreateReturnRecordViewModel viewModel) 
+        public async Task<IActionResult> Edit(int id, CreateReturnRecordViewModel viewModel)
         {
             if (id != _context.ReturnRecords.FindAsync(id).Result?.Id) // Basic check if the record exists
             {
@@ -285,12 +322,17 @@ namespace RentalEquipmentManagementWebApp.Controllers
             {
                 try
                 {
-                    var returnRecordToUpdate = await _context.ReturnRecords.FindAsync(id);
+                    var returnRecordToUpdate = await _context.ReturnRecords
+                        .Include(rr => rr.RentalTransaction)
+                            .ThenInclude(rt => rt.Customer)
+                        .FirstOrDefaultAsync(rr => rr.Id == id);
+
                     if (returnRecordToUpdate == null)
                     {
                         return NotFound();
                     }
 
+                    // Update fields
                     returnRecordToUpdate.RentalTransactionId = viewModel.RentalTransactionId;
                     returnRecordToUpdate.ActualReturnDate = (DateTime)viewModel.ActualReturnDate;
                     returnRecordToUpdate.ReturnCondition = viewModel.ReturnCondition;
@@ -299,6 +341,40 @@ namespace RentalEquipmentManagementWebApp.Controllers
 
                     _context.Update(returnRecordToUpdate);
                     await _context.SaveChangesAsync();
+
+                    // Get current user
+                    var userEmail = User.Identity?.Name;
+                    var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+
+                    if (currentUser != null)
+                    {
+                        // Audit log
+                        await _auditService.LogActivityAsync(
+                            "Return Record Edited",
+                            $"Return record ID {id} was edited by {currentUser.Name}.",
+                            currentUser.Id
+                        );
+
+                        // Notify current user (manager/admin)
+                        await _notificationService.CreateNotificationAsync(
+                            currentUser.Id,
+                            "Return Record Edited",
+                            $"You edited return record ID {id}."
+                        );
+
+                        // Notify customer
+                        var customer = returnRecordToUpdate.RentalTransaction?.Customer;
+                        if (customer != null)
+                        {
+                            await _notificationService.CreateNotificationAsync(
+                                customer.Id,
+                                "Your Return Record Was Updated",
+                                $"Your return record ID {id} was updated by {currentUser.Name}."
+                            );
+                        }
+                    }
+
+                    TempData["SuccessMessage"] = $"Return record ID {id} updated successfully.";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -311,6 +387,10 @@ namespace RentalEquipmentManagementWebApp.Controllers
                     {
                         throw;
                     }
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, "An error occurred while saving.");
                 }
             }
 
@@ -327,7 +407,8 @@ namespace RentalEquipmentManagementWebApp.Controllers
             return View(viewModel);
         }
 
-        [Authorize(Roles = "Administrator")]
+
+        [Authorize(Policy = "RequireManagerRole")]
         // GET: ReturnRecords/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -365,21 +446,67 @@ namespace RentalEquipmentManagementWebApp.Controllers
             return View(viewModel);
         }
 
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Policy = "RequireManagerRole")]
         // POST: ReturnRecords/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var returnRecord = await _context.ReturnRecords.FindAsync(id);
+            var returnRecord = await _context.ReturnRecords
+                .Include(rr => rr.RentalTransaction)
+                    .ThenInclude(rt => rt.Customer)
+                .FirstOrDefaultAsync(rr => rr.Id == id);
+
+            if (returnRecord == null)
+            {
+                return NotFound();
+            }
+
             _context.ReturnRecords.Remove(returnRecord);
             await _context.SaveChangesAsync();
+
+            var userEmail = User.Identity?.Name;
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+
+            if (currentUser != null)
+            {
+                // Audit log
+                await _auditService.LogActivityAsync(
+                    "Return Record Deleted",
+                    $"Return record ID {id} was deleted by {currentUser.Name}.",
+                    currentUser.Id
+                );
+
+                // Notify current user (admin/manager)
+                await _notificationService.CreateNotificationAsync(
+                    currentUser.Id,
+                    "Return Record Deleted",
+                    $"You deleted return record ID {id}."
+                );
+
+                // Notify customer whose record was deleted
+                var customer = returnRecord.RentalTransaction?.Customer;
+                if (customer != null)
+                {
+                    await _notificationService.CreateNotificationAsync(
+                        customer.Id,
+                        "Your Return Record Deleted",
+                        $"Your return record ID {id} was deleted by {currentUser.Name}."
+                    );
+                }
+            }
+
+            TempData["SuccessMessage"] = $"Return record ID {id} was deleted successfully.";
+
             return RedirectToAction(nameof(Index));
         }
+
         private bool ReturnRecordExists(int id)
         {
             return _context.ReturnRecords.Any(e => e.Id == id);
         }
+
+
 
     }
 }

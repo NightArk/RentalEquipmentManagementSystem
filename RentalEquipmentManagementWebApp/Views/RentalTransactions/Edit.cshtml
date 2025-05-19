@@ -1,9 +1,114 @@
-﻿@model RentalEquipmentManagementWebApp.Models.RentalTransaction.RentalTransactionCreateViewModel
+﻿@model RentalEquipmentManagementWebApp.Models.RentalTransaction.RentalTransactionEditViewModel
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Rental Transaction";
 }
 
-<h1>Edit</h1>
+<h2>Edit Rental Transaction</h2>
 
+<form asp-action="Edit" enctype="multipart/form-data">
+    <input type="hidden" asp-for="Id" />
 
+    <!-- Read-only fields from ViewBag -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Rental Request (ID)</label>
+            <input class="form-control" value="@ViewBag.RentalRequestId" readonly />
+            <input type="hidden" asp-for="RentalRequestId" />
+            <span asp-validation-for="RentalRequestId" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Customer Name</label>
+            <input class="form-control" value="@ViewBag.CustomerName" readonly />
+            <input type="hidden" asp-for="CustomerId" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Equipment Name</label>
+            <input class="form-control" value="@ViewBag.AssignedEquipmentName" readonly />
+            <input type="hidden" asp-for="AssignedEquipmentId" />
+        </div>
+    </div>
+
+    <!-- Editable Date Fields -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="ActualRentalStartDate" class="form-label">Start Date</label>
+            <input asp-for="ActualRentalStartDate" class="form-control" type="date" />
+            <span asp-validation-for="ActualRentalStartDate" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="ReturnDate" class="form-label">Return Date</label>
+            <input asp-for="ReturnDate" class="form-control" type="date" />
+            <span asp-validation-for="ReturnDate" class="text-danger"></span>
+        </div>
+    </div>
+
+    <!-- Numeric Input Fields -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label asp-for="RentalPeriod" class="form-label">Rental Period (days)</label>
+            <input asp-for="RentalPeriod" class="form-control" type="number" min="1" />
+            <span asp-validation-for="RentalPeriod" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="RentalFee" class="form-label">Rental Fee</label>
+            <input asp-for="RentalFee" class="form-control" type="number" step="0.01" min="0" />
+            <span asp-validation-for="RentalFee" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Deposit" class="form-label">Deposit</label>
+            <input asp-for="Deposit" class="form-control" type="number" step="0.01" min="0" />
+            <span asp-validation-for="Deposit" class="text-danger"></span>
+        </div>
+    </div>
+
+    <!-- Payment Status Dropdown -->
+    <div class="mb-3">
+        <label asp-for="PaymentStatus" class="form-label">Payment Status</label>
+        <select asp-for="PaymentStatus" class="form-select">
+            <option value="">-- Select Status --</option>
+            <option value="Pending">Pending</option>
+            <option value="Paid">Paid</option>
+            <option value="Overdue">Overdue</option>
+        </select>
+        <span asp-validation-for="PaymentStatus" class="text-danger"></span>
+    </div>
+
+    <!-- File Upload Section -->
+    @if (Model.ExistingDocuments != null && Model.ExistingDocuments.Count > 0)
+    {
+        <div class="mb-3">
+            <label class="form-label">Existing Files</label>
+            <div class="list-group">
+                @foreach (var doc in Model.ExistingDocuments)
+                {
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>@doc.FileName</span>
+                        <a href="@Url.Action("Download", new { id = doc.Id })" class="btn btn-sm btn-outline-primary">
+                            Download
+                        </a>
+                    </div>
+                }
+            </div>
+            <div class="form-text mt-2">Uploading new files will replace all existing files.</div>
+        </div>
+    }
+
+    <div class="mb-3">
+        <label class="form-label">Upload Files</label>
+        <input asp-for="Files" type="file" class="form-control" multiple />
+        <span asp-validation-for="Files" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

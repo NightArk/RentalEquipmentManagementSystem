@@ -1,7 +1,107 @@
 ﻿@model RentalEquipmentManagementWebApp.Models.RentalTransaction.RentalTransactionViewModel
+
 @{
     ViewData["Title"] = "Rental Transaction Details";
-    var files = ViewBag.Files as List<RentalEquipmentManagementLogic.Models.Document>;
 }
 
+<div class="container mt-4">
+    <h2>Rental Transaction Details</h2>
+    <hr />
 
+    <div class="row">
+        <!-- Basic Information Column -->
+        <div class="col-md-6">
+            <dl class="row">
+                <dt class="col-sm-4">Transaction ID:</dt>
+                <dd class="col-sm-8">@Model.Id</dd>
+
+                <dt class="col-sm-4">Start Date:</dt>
+                <dd class="col-sm-8">@Model.ActualRentalStartDate.ToString("d")</dd>
+
+                <dt class="col-sm-4">Return Date:</dt>
+                <dd class="col-sm-8">@Model.ReturnDate.ToString("d")</dd>
+
+                <dt class="col-sm-4">Rental Period:</dt>
+                <dd class="col-sm-8">@Model.RentalPeriod days</dd>
+            </dl>
+        </div>
+
+        <!-- Customer/Equipment Column -->
+        <div class="col-md-6">
+            <dl class="row">
+                <dt class="col-sm-4">Customer:</dt>
+                <dd class="col-sm-8">@Model.CustomerName</dd>
+
+                <dt class="col-sm-4">Equipment:</dt>
+                <dd class="col-sm-8">@Model.EquipmentName</dd>
+
+                <dt class="col-sm-4">Rental Request ID:</dt>
+                <dd class="col-sm-8">@Model.RentalRequestId</dd>
+            </dl>
+        </div>
+    </div>
+
+    <!-- Financial Section -->
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <dl class="row">
+                <dt class="col-sm-4">Rental Fee:</dt>
+                <dd class="col-sm-8">@Model.RentalFee.ToString("C")</dd>
+
+                <dt class="col-sm-4">Deposit:</dt>
+                <dd class="col-sm-8">@Model.Deposit.ToString("C")</dd>
+            </dl>
+        </div>
+
+        <div class="col-md-6">
+            <dl class="row">
+                <dt class="col-sm-4">Payment Status:</dt>
+                <dd class="col-sm-8">
+                    <span class="badge @GetStatusBadgeClass(Model.PaymentStatus)">
+                        @Model.PaymentStatus
+                    </span>
+                </dd>
+
+                <dt class="col-sm-4">Created At:</dt>
+                <dd class="col-sm-8">@Model.CreatedAt.ToString("g")</dd>
+            </dl>
+        </div>
+    </div>
+
+    <!-- Documents Section -->
+    @if (Model.Documents != null && Model.Documents.Count > 0)
+    {
+        <div class="mt-4">
+            <h5>Attached Documents</h5>
+            <div class="list-group">
+                @foreach (var doc in Model.Documents)
+                {
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>@doc.FileName</span>
+                        <a href="@Url.Action("Download", new { id = doc.Id })"
+                           class="btn btn-sm btn-outline-primary">
+                            Download
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </div>
+</div>
+
+@functions {
+    string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Paid" => "bg-success",
+            "Pending" => "bg-warning text-dark",
+            "Overdue" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+}

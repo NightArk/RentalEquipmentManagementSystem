@@ -7,68 +7,90 @@
     var readNotifications = Model.Where(n => n.Status == "Read").ToList();
 }
 
-<h1>Notifications</h1>
+<h1 class="mb-4">Notifications</h1>
 
-@if (unreadNotifications.Any())
+@if (!unreadNotifications.Any() && !readNotifications.Any())
 {
-    <h2>Unread Notifications</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Message</th>
-                <th>Type</th>
-                <th>Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var notification in unreadNotifications)
-            {
-                <tr>
-                    <td>@notification.MessageContent</td>
-                    <td>@notification.NotificationType</td>
-                    <td>@notification.CreatedAt?.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>
-                        <a asp-action="Details" asp-route-id="@notification.Id" class="btn btn-sm btn-info">Show Message</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="alert alert-info text-center py-4">
+        <i class="bi bi-bell-slash fs-1 mb-3"></i>
+        <p class="fs-5 mb-0">You have no notifications at the moment.</p>
+    </div>
 }
 else
 {
-    <p>No New notifications.</p>
-}
+    @if (unreadNotifications.Any())
+    {
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">Unread Notifications (@unreadNotifications.Count)</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0 table-hover align-middle">
+                    <thead class="table-warning">
+                        <tr>
+                            <th>Message</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var notification in unreadNotifications)
+                        {
+                            <tr class="fw-bold bg-light">
+                                <td>@notification.MessageContent</td>
+                                <td>
+                                    <span class="badge bg-primary">@notification.NotificationType</span>
+                                </td>
+                                <td>@notification.CreatedAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@notification.Id" class="btn btn-sm btn-info">
+                                        <i class="bi bi-eye"></i> Show Message
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
 
-@if (readNotifications.Any())
-{
-    <h2 class="mt-4">Read Notifications</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Message</th>
-                <th>Type</th>
-                <th>Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var notification in readNotifications)
-            {
-                <tr>
-                    <td>@notification.MessageContent</td>
-                    <td>@notification.NotificationType</td>
-                    <td>@notification.CreatedAt?.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>
-                        <a asp-action="Details" asp-route-id="@notification.Id" class="btn btn-sm btn-secondary">Show Message</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <p>No read notifications.</p>
+    @if (readNotifications.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Read Notifications (@readNotifications.Count)</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0 table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Message</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var notification in readNotifications)
+                        {
+                            <tr>
+                                <td>@notification.MessageContent</td>
+                                <td>
+                                    <span class="badge bg-secondary">@notification.NotificationType</span>
+                                </td>
+                                <td>@notification.CreatedAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@notification.Id" class="btn btn-sm btn-secondary">
+                                        <i class="bi bi-eye"></i> Show Message
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
 }

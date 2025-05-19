@@ -6,17 +6,21 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+using RentalEquipmentManagementWebApp.Services;
 
 namespace RentalEquipmentManagementWebApp.Controllers
 {
+    [Authorize(Policy = "RequireAuthenticated")]
     public class FeedbackController : Controller
     {
         private readonly EquipmentRentalDBContext _context;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IAuditService _auditService;
+        private readonly INotificationService _notificationService;
 
 
-
-        public FeedbackController(EquipmentRentalDBContext context, UserManager<IdentityUser> userManager)
+        public FeedbackController(EquipmentRentalDBContext context, UserManager<IdentityUser> userManager, IAuditService auditService, INotificationService notificationService)
         {
             _context = context;
             _userManager = userManager;
@@ -86,6 +90,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
 
 
         [HttpPost]
+        [Authorize(Policy = "RequireManagerRole")]
         public async Task<IActionResult> Hide(int id)
         {
             var feedback = await _context.Feedbacks.FindAsync(id);
@@ -102,6 +107,8 @@ namespace RentalEquipmentManagementWebApp.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "RequireManagerRole")]
+
         public async Task<IActionResult> Show(int id)
         {
             var feedback = await _context.Feedbacks.FindAsync(id);
@@ -116,6 +123,8 @@ namespace RentalEquipmentManagementWebApp.Controllers
 
             return RedirectToAction("Index");
         }
+
+        [Authorize(Policy = "RequireManagerRole")]
         public async Task<IActionResult> Manage(int equipmentId)
         {
 
@@ -203,7 +212,6 @@ namespace RentalEquipmentManagementWebApp.Controllers
 
             if (!ModelState.IsValid)
             {
-                // If the rating is missing, repopulate the form and return to the same view
                 var equipment = await _context.Equipment.FindAsync(viewModel.EquipmentId);
                 if (equipment != null)
                 {
@@ -227,23 +235,23 @@ namespace RentalEquipmentManagementWebApp.Controllers
                     Rating = viewModel.Rating.Value,
                     Comment = viewModel.Comment,
                     CreatedAt = DateTime.UtcNow,
-                    IsHide = false // Default visibility
+                    IsHide = false
                 };
 
                 _context.Feedbacks.Add(feedback);
                 await _context.SaveChangesAsync();
 
-                // Add success message
+
+
+
                 TempData["SuccessMessage"] = "Your feedback has been submitted successfully!";
 
-                // Redirect to equipment details
                 return RedirectToAction("Details", "Equipment", new { id = viewModel.EquipmentId });
             }
             catch
             {
                 ModelState.AddModelError("", "An error occurred while saving your feedback. Please try again.");
 
-                // Repopulate the form
                 var equipment = await _context.Equipment.FindAsync(viewModel.EquipmentId);
                 if (equipment != null)
                 {
@@ -252,6 +260,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
                 return View(viewModel);
             }
         }
+
 
 
         private async Task<int?> GetCurrentUserIdAsync()

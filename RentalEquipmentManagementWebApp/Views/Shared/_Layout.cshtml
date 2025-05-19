@@ -32,20 +32,23 @@
                             <li class="nav-item">
                                 <a class="nav-link text-light" asp-area="" asp-controller="Categories" asp-action="Index">Categories</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-light" asp-area="" asp-controller="Notifications" asp-action="Index">Notifications</a>
+                            </li>
                             
                             @if (User.IsInRole("Customer"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-light" asp-area="" asp-controller="RentalRequest" asp-action="Index">My Rental Requests</a>
+                                    <a class="nav-link text-light" asp-area="" asp-controller="RentalRequests" asp-action="Index">My Rental Requests</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-light" asp-area="" asp-controller="RentalTransactions" asp-action="MyTransactions">My Rentals</a>
+                                    <a class="nav-link text-light" asp-area="" asp-controller="RentalTransactions" asp-action="Index">My Rentals</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-light" asp-area="" asp-controller="ReturnRecord" asp-action="Index">My Returns</a>
                                 </li>
                             }
-                            
+
                             @if (User.IsInRole("Administrator") || User.IsInRole("Manager"))
                             {
                                 <li class="nav-item dropdown">
@@ -60,7 +63,7 @@
                                     </ul>
                                 </li>
                             }
-                            
+
                             @if (User.IsInRole("Administrator"))
                             {
                                 <li class="nav-item dropdown">

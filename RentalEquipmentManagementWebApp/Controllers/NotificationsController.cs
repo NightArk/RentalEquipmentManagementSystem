@@ -1,13 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RentalEquipmentManagementLogic.Models;
-using System.Security.Claims;
+using System.Threading.Tasks;
+using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace RentalEquipmentManagementWebApp.Controllers
 {
+
+    [Authorize(Policy = "RequireAuthenticated")]
     public class NotificationsController : Controller
     {
-        private readonly EquipmentRentalDBContext _context; 
+        private readonly EquipmentRentalDBContext _context;
+        
 
         public NotificationsController(EquipmentRentalDBContext context)
         {
@@ -16,8 +22,8 @@ namespace RentalEquipmentManagementWebApp.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var currentUserId = GetCurrentUserIdAsInt();
-            if (!currentUserId.HasValue)
+            var currentUserId = await GetCurrentUserId();
+            if (currentUserId == null)
             {
                 return Unauthorized();
             }
@@ -38,8 +44,8 @@ namespace RentalEquipmentManagementWebApp.Controllers
                 return NotFound();
             }
 
-            var currentUserId = GetCurrentUserIdAsInt();
-            if (!currentUserId.HasValue || notification.UserId != currentUserId.Value)
+            var currentUserId = await GetCurrentUserId();
+            if (currentUserId == null || notification.UserId != currentUserId.Value)
             {
                 return Unauthorized();
             }
@@ -51,21 +57,14 @@ namespace RentalEquipmentManagementWebApp.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return View(notification); // Create a Details.cshtml view
+            return View(notification); // Ensure you have a Details.cshtml view
         }
 
-        private int? GetCurrentUserIdAsInt()
+        private async Task<int?> GetCurrentUserId()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (int.TryParse(userIdClaim, out int userId))
-            {
-                return userId;
-            }
-            return null;
+            var userEmail = User.Identity?.Name;
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+            return currentUser?.Id;
         }
     }
-
-    
-
 }
-

@@ -55,5 +55,8 @@ namespace RentalEquipmentManagementLogic
 
             await _dbContext.SaveChangesAsync();
         }
+
+
+
     }
 }

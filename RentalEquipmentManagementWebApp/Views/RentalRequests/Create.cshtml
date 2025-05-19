@@ -1,77 +1,146 @@
 ﻿@model RentalEquipmentManagementWebApp.Models.RentalRequest.RentalRequestCreateViewModel
-
 @{
     ViewData["Title"] = "Create Rental Request";
 }
 
-<div class="container-fluid">
-    <h1 class="mt-4 mb-4">Create Rental Request</h1>
+<h1>@ViewData["Title"]</h1>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create" id="rentalRequestForm">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">Rental Request Details</h6>
-        </div>
-        <div class="card-body">
-            <form method="post">
-                <div class="row">
-                    @if (Model.UserList != null && Model.UserList.Any())
-                    {
-                        <div class="col-md-6">
-                            <label for="UserId" class="form-label">Select User</label>
-                            <select class="form-select" id="UserId" name="UserId" required>
-                                <option value="">Select User</option>
-                                @foreach (var user in Model.UserList)
-                                {
-                                    <option value="@user.Value">@user.Text</option>
-                                }
-                            </select>
-                        </div>
-                    }
-
-                    <div class="col-md-6">
-                        <label for="EquipmentId" class="form-label">Select Equipment</label>
-                        <select class="form-select" id="EquipmentId" name="EquipmentId" required>
-                            <option value="">Select Equipment</option>
-                            @foreach (var equipment in Model.EquipmentList)
-                            {
-                                <option value="@equipment.Value">@equipment.Text</option>
-                            }
-                        </select>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="RentalStartDate" class="form-label">Rental Start Date</label>
-                        <input type="date" class="form-control" id="RentalStartDate" name="RentalStartDate" required />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="ReturnDate" class="form-label">Return Date</label>
-                        <input type="date" class="form-control" id="ReturnDate" name="ReturnDate" required />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="TotalCost" class="form-label">Total Cost</label>
-                        <input type="number" class="form-control" id="TotalCost" name="TotalCost" required />
-                    </div>
-
-                    <div class="col-md-12">
-                        <label for="Description" class="form-label">Description</label>
-                        <textarea class="form-control" id="Description" name="Description" required></textarea>
-                    </div>
-
-                    <div class="col-md-12 text-center mt-4">
-                        <button type="submit" class="btn btn-primary">Create Request</button>
-                    </div>
+            @if (ViewBag.IsCustomer)
+            {
+                <div class="form-group mb-3">
+                    <label class="form-label">Customer</label>
+                    <input type="text" class="form-control" value="@ViewBag.CustomerName" readonly />
+                    <input type="hidden" name="CustomerId" value="@ViewBag.CustomerId" />
                 </div>
-            </form>
-        </div>
+            }
+            else
+            {
+                <div class="form-group mb-3">
+                    <label asp-for="CustomerId" class="form-label">Customer</label>
+                    <select asp-for="CustomerId" class="form-control form-select" asp-items="ViewBag.Customers" required>
+                        <option value="">-- Select Customer --</option>
+                    </select>
+                    <span asp-validation-for="CustomerId" class="text-danger"></span>
+                </div>
+            }
+
+            @if (ViewBag.EquipmentName != null)
+            {
+                <div class="form-group mb-3">
+                    <label class="form-label">Equipment</label>
+                    <input type="text" class="form-control" value="@ViewBag.EquipmentName" readonly />
+                    <input type="hidden" asp-for="EquipmentId" value="@Model.EquipmentId" />
+                </div>
+            }
+            else
+            {
+                <div class="form-group mb-3">
+                    <label asp-for="EquipmentId" class="form-label">Equipment</label>
+                    <select asp-for="EquipmentId" class="form-control form-select" asp-items="ViewBag.Equipment" id="equipmentSelect" required>
+                        <option value="">-- Select Equipment --</option>
+                    </select>
+                    <span asp-validation-for="EquipmentId" class="text-danger"></span>
+                </div>
+            }
+
+            <div class="form-group mb-3">
+                <label asp-for="StartDate" class="form-label"></label>
+                <input asp-for="StartDate" class="form-control" id="StartDate" type="date"
+                       min="@Model.StartDate.ToString("yyyy-MM-dd")" required />
+                <span asp-validation-for="StartDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ReturnDate" class="form-label"></label>
+                <input asp-for="ReturnDate" class="form-control" id="ReturnDate" type="date"
+                       min="@Model.ReturnDate.ToString("yyyy-MM-dd")" required />
+                <span asp-validation-for="ReturnDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="TotalCost" class="form-label"></label>
+                <input asp-for="TotalCost" class="form-control" readonly id="totalCost" />
+                <span asp-validation-for="TotalCost" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        const equipmentPrices = @Html.Raw(Json.Serialize(ViewBag.EquipmentPrices));
+
+        function calculateTotalCost() {
+            try {
+                const startDateInput = document.getElementById("StartDate");
+                const returnDateInput = document.getElementById("ReturnDate");
+                const totalCostInput = document.getElementById("totalCost");
+
+                let equipmentId = "@Model.EquipmentId";
+
+                const equipmentSelect = document.getElementById("equipmentSelect");
+                if (equipmentSelect) {
+                    equipmentId = equipmentSelect.value;
+                }
+
+                const startDate = new Date(startDateInput.value);
+                const returnDate = new Date(returnDateInput.value);
+
+                // Update min return date
+                if (!isNaN(startDate.getTime())) {
+                    const minReturn = new Date(startDate);
+                    minReturn.setDate(minReturn.getDate() + 1);
+                    returnDateInput.min = minReturn.toISOString().split('T')[0];
+                }
+
+                if (!equipmentId || !equipmentPrices[equipmentId] || isNaN(startDate) || isNaN(returnDate)) {
+                    totalCostInput.value = "";
+                    return;
+                }
+
+                const timeDiff = returnDate - startDate;
+                let rentalDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+                rentalDays = Math.max(1, rentalDays);
+
+                const dailyRate = equipmentPrices[equipmentId];
+                const totalCost = dailyRate * rentalDays;
+
+                totalCostInput.value = totalCost.toFixed(2);
+            } catch (err) {
+                console.error("Error calculating total cost:", err);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            calculateTotalCost();
+
+            const startDateInput = document.getElementById("StartDate");
+            const returnDateInput = document.getElementById("ReturnDate");
+            const equipmentSelect = document.getElementById("equipmentSelect");
+
+            if (startDateInput) startDateInput.addEventListener("change", calculateTotalCost);
+            if (returnDateInput) returnDateInput.addEventListener("change", calculateTotalCost);
+            if (equipmentSelect) equipmentSelect.addEventListener("change", calculateTotalCost);
+        });
+    </script>
+}

@@ -13,7 +13,7 @@
                     <h6 class="m-0 font-weight-bold text-primary">User Information</h6>
                 </div>
                 <div class="card-body">
-                    <form asp-action="EditUser" method="post">
+                    <form asp-controller="Admin" asp-action="EditUser" method="post">
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="IdentityUserId" />
 

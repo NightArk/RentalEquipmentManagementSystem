@@ -12,15 +12,29 @@
 
 <div class="container-fluid">
     <h1 class="mt-4 mb-4">Rental Requests</h1>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Search & Filter -->
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
             <h6 class="m-0 font-weight-bold text-primary">Search & Filter</h6>
-
-                <a asp-action="Create" class="btn btn-primary">
-                    <i class="bi bi-plus-circle me-1"></i> Create New
-                </a>
-
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Create New
+            </a>
         </div>
         <div class="card-body">
             <form method="get" class="row g-3 mb-4">
@@ -28,18 +42,20 @@
                     <label class="form-label">Equipment Name</label>
                     <input type="text" name="equipmentSearch" value="@equipmentSearch" class="form-control" placeholder="Search equipment..." />
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Customer Name</label>
-                    <input type="text" name="customerNameSearch" value="@customerNameSearch" class="form-control" placeholder="Search customer..." />
-                </div>
+                @if (!User.IsInRole("Customer"))
+                {
+                    <div class="col-md-3">
+                        <label class="form-label">Customer Name</label>
+                        <input type="text" name="customerNameSearch" value="@customerNameSearch" class="form-control" placeholder="Search customer..." />
+                    </div>
+                }
                 <div class="col-md-2">
                     <label class="form-label">Status</label>
                     <select name="statusFilter" class="form-select">
                         <option value="">All</option>
                         <option value="Pending" selected="@(statusFilter == "Pending")">Pending</option>
                         <option value="Approved" selected="@(statusFilter == "Approved")">Approved</option>
-                        <option value="PickedUp" selected="@(statusFilter == "PickedUp")">PickedUp</option>
-                        <option value="Returned" selected="@(statusFilter == "Returned")">Returned</option>
+                        <option value="Rejected" selected="@(statusFilter == "Rejected")">Rejected</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -62,6 +78,7 @@
         </div>
     </div>
 
+    <!-- Rental Request List -->
     <div class="card shadow mb-4">
         <div class="card-header d-flex justify-content-between">
             <h6 class="m-0 font-weight-bold text-primary">Rental Request List</h6>
@@ -83,7 +100,10 @@
                                 <th>Status</th>
                                 <th>Created At</th>
                                 <th>Description</th>
-                                <th>Customer</th>
+                                @if (!User.IsInRole("Customer"))
+                                {
+                                    <th>Customer</th>
+                                }
                                 <th>Equipment</th>
                                 <th>Actions</th>
                             </tr>
@@ -98,20 +118,24 @@
                                     <td>@item.Status</td>
                                     <td>@item.CreatedAt.ToString("yyyy-MM-dd")</td>
                                     <td>@item.Description</td>
-                                    <td>@item.CustomerName</td>
+                                    @if (!User.IsInRole("Customer"))
+                                    {
+                                        <td>@item.CustomerName</td>
+                                    }
                                     <td>@item.EquipmentName</td>
                                     <td>
                                         <div class="btn-group">
                                             <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">
                                                 <i class="bi bi-info-circle"></i>
                                             </a>
-                                            @if (User.IsInRole("Administrator") || User.IsInRole("Manager") || (User.IsInRole("Customer") && item.Status == "Pending"))
+                                            @if (User.IsInRole("Administrator") || User.IsInRole("Manager") ||
+                                           (User.IsInRole("Customer") && item.Status == "Pending"))
                                             {
                                                 <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary btn-sm">
                                                     <i class="bi bi-pencil-square"></i>
                                                 </a>
                                             }
-                                            @if (User.IsInRole("Administrator"))
+                                            @if (User.IsInRole("Administrator") || User.IsInRole("Manager"))
                                             {
                                                 <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">
                                                     <i class="bi bi-trash"></i>

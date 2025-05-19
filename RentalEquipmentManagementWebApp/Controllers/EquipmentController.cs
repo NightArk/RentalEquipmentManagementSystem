@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using LogicModels = RentalEquipmentManagementLogic.Models;
 using RentalEquipmentManagementWebApp.Models.Equipment;
 using RentalEquipmentManagementWebApp.Services;
+using Microsoft.AspNetCore.Identity;
 
 namespace RentalEquipmentManagementWebApp.Controllers
 {
@@ -12,11 +13,18 @@ namespace RentalEquipmentManagementWebApp.Controllers
     {
         private readonly LogicModels.EquipmentRentalDBContext _context;
         private readonly IAuditService _auditService;
+        private readonly INotificationService _notificationService;
+       
 
-        public EquipmentController(LogicModels.EquipmentRentalDBContext context, IAuditService auditService)
+
+
+
+        public EquipmentController(LogicModels.EquipmentRentalDBContext context, IAuditService auditService, INotificationService notificationService)
         {
             _context = context;
             _auditService = auditService;
+            _notificationService = notificationService;
+
         }
 
         // GET: Equipment
@@ -123,24 +131,45 @@ namespace RentalEquipmentManagementWebApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                var equipment = new LogicModels.Equipment
+                try
                 {
-                    Name = model.Name,
-                    Description = model.Description,
-                    CategoryId = model.CategoryId,
-                    RentalPrice = model.RentalPrice,
-                    AvailabilityStatus = "Available",
-                    ConditionStatus = "Excellent",
-                    CreatedAt = DateTime.Now
-                };
+                    var equipment = new LogicModels.Equipment
+                    {
+                        Name = model.Name,
+                        Description = model.Description,
+                        CategoryId = model.CategoryId,
+                        RentalPrice = model.RentalPrice,
+                        AvailabilityStatus = "Available",
+                        ConditionStatus = "Excellent",
+                        CreatedAt = DateTime.Now
+                    };
 
-                _context.Add(equipment);
-                await _context.SaveChangesAsync();
+                    _context.Add(equipment);
+                    await _context.SaveChangesAsync();
 
-                // Log the equipment creation
-                await _auditService.LogActivityAsync("Equipment Creation", $"Equipment '{equipment.Name}' was created");
+                    var userId = await GetCurrentUserId();
 
-                return RedirectToAction(nameof(Index));
+                    await _auditService.LogActivityAsync("Equipment Creation", $"Equipment '{equipment.Name}' was created", userId.Value);
+
+                    if (userId != null)
+                    {
+                        await _notificationService.CreateNotificationAsync(
+                            userId.Value,
+                            "Equipment Created",
+                            "Equipment Created",
+                            $"You created equipment '{equipment.Name}'."
+                        );
+                    }
+
+                    TempData["SuccessMessage"] = $"Equipment '{equipment.Name}' was created successfully.";
+
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    // Log exception here if needed
+                    TempData["ErrorMessage"] = $"Failed to create equipment: {ex.Message}";
+                }
             }
 
             ViewBag.Categories = await _context.Categories
@@ -153,6 +182,7 @@ namespace RentalEquipmentManagementWebApp.Controllers
 
             return View(model);
         }
+
 
         // GET: Equipment/Edit/5
         [Authorize(Policy = "RequireManagerRole")]
@@ -216,7 +246,8 @@ namespace RentalEquipmentManagementWebApp.Controllers
         {
             if (id != model.Id)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Equipment ID mismatch.";
+                return RedirectToAction(nameof(Index));
             }
 
             if (ModelState.IsValid)
@@ -226,7 +257,8 @@ namespace RentalEquipmentManagementWebApp.Controllers
                     var equipment = await _context.Equipment.FindAsync(id);
                     if (equipment == null)
                     {
-                        return NotFound();
+                        TempData["ErrorMessage"] = "Equipment not found.";
+                        return RedirectToAction(nameof(Index));
                     }
 
                     equipment.Name = model.Name;
@@ -239,23 +271,44 @@ namespace RentalEquipmentManagementWebApp.Controllers
                     _context.Update(equipment);
                     await _context.SaveChangesAsync();
 
-                    // Log the equipment update
-                    await _auditService.LogActivityAsync("Equipment Update", $"Equipment '{equipment.Name}' was updated");
+                    var userId = await GetCurrentUserId();
+                    await _auditService.LogActivityAsync("Equipment Update", $"Equipment '{equipment.Name}' was updated", userId);
+
+                    if (userId != null)
+                    {
+                        await _notificationService.CreateNotificationAsync(
+                            userId.Value,
+                            "Equipment Updated",
+                            "Equipment Updated",
+                            $"You updated equipment '{equipment.Name}'."
+                        );
+                    }
+
+                    TempData["SuccessMessage"] = $"Equipment '{model.Name}' was updated successfully.";
+                    return RedirectToAction(nameof(Index));
+
+
+                    
                 }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!EquipmentExists(model.Id))
                     {
-                        return NotFound();
+                        TempData["ErrorMessage"] = "Equipment no longer exists.";
+                        return RedirectToAction(nameof(Index));
                     }
                     else
                     {
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = $"Failed to update equipment: {ex.Message}";
+                }
             }
 
+            // Repopulate dropdowns and return view on failure
             ViewBag.Categories = await _context.Categories
                 .Select(c => new SelectListItem
                 {
@@ -265,21 +318,21 @@ namespace RentalEquipmentManagementWebApp.Controllers
                 .ToListAsync();
 
             ViewBag.AvailabilityStatuses = new List<SelectListItem>
-            {
-                new SelectListItem { Value = "Available", Text = "Available" },
-                new SelectListItem { Value = "Rented", Text = "Rented" },
-                new SelectListItem { Value = "Under Maintenance", Text = "Under Maintenance" },
-                new SelectListItem { Value = "unavailable", Text = "unavailable" }
-            };
+        {
+            new SelectListItem { Value = "Available", Text = "Available" },
+            new SelectListItem { Value = "Rented", Text = "Rented" },
+            new SelectListItem { Value = "Under Maintenance", Text = "Under Maintenance" },
+            new SelectListItem { Value = "unavailable", Text = "unavailable" }
+        };
 
             ViewBag.ConditionStatuses = new List<SelectListItem>
-            {
-                new SelectListItem { Value = "Excellent", Text = "Excellent" },
-                new SelectListItem { Value = "Good", Text = "Good" },
-                new SelectListItem { Value = "Fair", Text = "Fair" },
-                new SelectListItem { Value = "Poor", Text = "Poor" },
-                new SelectListItem { Value = "Damaged", Text = "Damaged" }
-            };
+        {
+            new SelectListItem { Value = "Excellent", Text = "Excellent" },
+            new SelectListItem { Value = "Good", Text = "Good" },
+            new SelectListItem { Value = "Fair", Text = "Fair" },
+            new SelectListItem { Value = "Poor", Text = "Poor" },
+            new SelectListItem { Value = "Damaged", Text = "Damaged" }
+        };
 
             return View(model);
         }
@@ -313,24 +366,36 @@ namespace RentalEquipmentManagementWebApp.Controllers
             var equipment = await _context.Equipment.FindAsync(id);
             if (equipment == null)
             {
-                return NotFound();
-            }
-
-            // Check if equipment is in use
-            var hasRentalRequests = await _context.RentalRequests.AnyAsync(r => r.EquipmentId == id);
-            var hasRentalTransactions = await _context.RentalTransactions.AnyAsync(r => r.AssignedEquipmentId == id);
-
-            if (hasRentalRequests || hasRentalTransactions)
-            {
-                TempData["ErrorMessage"] = "Cannot delete equipment that is associated with rental requests or transactions.";
+                TempData["ErrorMessage"] = "Equipment not found.";
                 return RedirectToAction(nameof(Index));
             }
 
-            _context.Equipment.Remove(equipment);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Equipment.Remove(equipment);
+                await _context.SaveChangesAsync();
 
-            // Log the equipment deletion
-            await _auditService.LogActivityAsync("Equipment Deletion", $"Equipment '{equipment.Name}' was deleted");
+                var userId = await GetCurrentUserId();
+                await _auditService.LogActivityAsync("Equipment Deletion", $"Equipment '{equipment.Name}' was deleted", userId);
+
+                if (userId != null)
+                {
+                    await _notificationService.CreateNotificationAsync(
+                      userId.Value,
+                      "Equipment Deleted",    // notificationType
+                      "Equipment Deleted",    // title
+                      $"You deleted equipment '{equipment.Name}'."
+                        );
+                }
+
+                TempData["SuccessMessage"] = $"Equipment '{equipment.Name}' was deleted successfully.";
+                return RedirectToAction(nameof(Index));
+
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Failed to delete equipment: {ex.Message}";
+            }
 
             return RedirectToAction(nameof(Index));
         }
@@ -338,6 +403,14 @@ namespace RentalEquipmentManagementWebApp.Controllers
         private bool EquipmentExists(int id)
         {
             return _context.Equipment.Any(e => e.Id == id);
+        }
+
+
+        private async Task<int?> GetCurrentUserId()
+        {
+            var userEmail = User.Identity?.Name;
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+            return currentUser?.Id;
         }
     }
 }

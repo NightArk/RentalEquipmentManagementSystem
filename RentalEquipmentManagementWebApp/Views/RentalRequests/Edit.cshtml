@@ -1,72 +1,141 @@
-﻿@model RentalEquipmentManagementWebApp.Models.RentalRequest.RentalRequestViewModel
+﻿@model RentalEquipmentManagementWebApp.Models.RentalRequest.RentalRequestEditViewModel
 @{
     ViewData["Title"] = "Edit Rental Request";
     bool isCustomer = (bool)ViewBag.IsCustomer;
 }
 
-<div class="container-fluid">
-    <h1 class="mt-4 mb-4">Edit Rental Request</h1>
+<h1>@ViewData["Title"]</h1>
 
-    <div class="card shadow mb-4">
-        <div class="card-body">
-            <form asp-action="Edit" method="post">
-                <input type="hidden" asp-for="Id" />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit" method="post" id="editRentalRequestForm">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="EquipmentId" />
+            <input type="hidden" asp-for="CustomerId" />
 
-                <div class="mb-3">
-                    <label class="form-label">Customer</label>
-                    <input type="text" class="form-control" value="@Model.CustomerName" disabled />
+            <div class="form-group mb-3">
+                <label class="form-label">Customer</label>
+                <input type="text" class="form-control" value="@Model.CustomerName" readonly />
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="form-label">Equipment</label>
+                <input type="text" class="form-control" value="@Model.EquipmentName" readonly />
+            </div>
+
+            @if (!isCustomer)
+            {
+                <div class="form-group mb-3">
+                    <label asp-for="StartDate" class="form-label"></label>
+                    <input asp-for="StartDate" class="form-control" id="StartDate" type="date"
+                           min="@Model.StartDate.ToString("yyyy-MM-dd")" required />
+                    <span asp-validation-for="StartDate" class="text-danger"></span>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Equipment</label>
-                    <input type="text" class="form-control" value="@Model.EquipmentName" disabled />
+                <div class="form-group mb-3">
+                    <label asp-for="ReturnDate" class="form-label"></label>
+                    <input asp-for="ReturnDate" class="form-control" id="ReturnDate" type="date"
+                           min="@Model.StartDate.AddDays(1).ToString("yyyy-MM-dd")" required />
+                    <span asp-validation-for="ReturnDate" class="text-danger"></span>
                 </div>
 
-                @if (!isCustomer)
-                {
-                    <div class="mb-3">
-                        <label asp-for="RentalStartDate" class="form-label"></label>
-                        <input asp-for="RentalStartDate" class="form-control" type="date" />
-                        <span asp-validation-for="RentalStartDate" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="ReturnDate" class="form-label"></label>
-                        <input asp-for="ReturnDate" class="form-control" type="date" />
-                        <span asp-validation-for="ReturnDate" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="TotalCost" class="form-label"></label>
-                        <input asp-for="TotalCost" class="form-control" />
-                        <span asp-validation-for="TotalCost" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Status" class="form-label"></label>
-                        <select asp-for="Status" class="form-select">
-                            <option value="Pending">Pending</option>
-                            <option value="Approved">Approved</option>
-                            <option value="PickedUp">PickedUp</option>
-                            <option value="Returned">Returned</option>
-                        </select>
-                        <span asp-validation-for="Status" class="text-danger"></span>
-                    </div>
-                }
-
-                <div class="mb-3">
-                    <label asp-for="Description" class="form-label"></label>
-                    <textarea asp-for="Description" class="form-control"></textarea>
-                    <span asp-validation-for="Description" class="text-danger"></span>
+                <div class="form-group mb-3">
+                    <label asp-for="TotalCost" class="form-label"></label>
+                    <input asp-for="TotalCost" class="form-control" id="TotalCost" readonly />
+                    <span asp-validation-for="TotalCost" class="text-danger"></span>
                 </div>
 
-                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save</button>
-                <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a>
-            </form>
-        </div>
+                <div class="form-group mb-3">
+                    <label asp-for="Status" class="form-label"></label>
+                    <select asp-for="Status" class="form-select" required>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                    <span asp-validation-for="Status" class="text-danger"></span>
+                </div>
+            }
+            else
+            {
+                <div class="form-group mb-3">
+                    <label asp-for="StartDate" class="form-label"></label>
+                    <input type="date" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" readonly />
+                    <input type="hidden" asp-for="StartDate" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="ReturnDate" class="form-label"></label>
+                    <input type="date" class="form-control" value="@Model.ReturnDate.ToString("yyyy-MM-dd")" readonly />
+                    <input type="hidden" asp-for="ReturnDate" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="TotalCost" class="form-label"></label>
+                    <input asp-for="TotalCost" class="form-control" readonly />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Status" class="form-label"></label>
+                    <input type="text" class="form-control" value="@Model.Status" readonly />
+                    <input type="hidden" asp-for="Status" />
+                </div>
+            }
+
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const startDateInput = document.getElementById("StartDate");
+            const returnDateInput = document.getElementById("ReturnDate");
+            const totalCostInput = document.getElementById("TotalCost");
+            const dailyRate = @ViewBag.EquipmentDailyRate;
+
+            function calculateTotalCost() {
+                if (!startDateInput || !returnDateInput || !totalCostInput || dailyRate == null) {
+                    return;
+                }
+
+                const startDate = new Date(startDateInput.value);
+                const returnDate = new Date(returnDateInput.value);
+
+                if (isNaN(startDate.getTime()) || isNaN(returnDate.getTime())) {
+                    totalCostInput.value = "";
+                    return;
+                }
+
+                // Ensure return date is at least one day after start date
+                const minReturnDate = new Date(startDate);
+                minReturnDate.setDate(minReturnDate.getDate() + 1);
+                returnDateInput.min = minReturnDate.toISOString().split("T")[0];
+
+                const msPerDay = 1000 * 60 * 60 * 24;
+                let rentalDays = Math.ceil((returnDate - startDate) / msPerDay);
+                rentalDays = Math.max(rentalDays, 1);
+
+                const totalCost = rentalDays * dailyRate;
+                totalCostInput.value = totalCost.toFixed(2);
+            }
+
+            if (startDateInput && returnDateInput) {
+                startDateInput.addEventListener("change", calculateTotalCost);
+                returnDateInput.addEventListener("change", calculateTotalCost);
+                calculateTotalCost(); // Initial calculation on load
+            }
+        });
+    </script>
 }

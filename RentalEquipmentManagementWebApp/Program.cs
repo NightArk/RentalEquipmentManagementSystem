@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using RentalEquipmentManagementLogic.Models;
 using RentalEquipmentManagementWebApp.Data;
 using RentalEquipmentManagementWebApp.Services;
-using System.Security.Claims;
+using OfficeOpenXml;
+using System.ComponentModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +17,7 @@ builder.Services.AddDbContext<EquipmentRentalDBContext>(options =>
 
 // Add Identity DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection") ?? 
+    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection") ??
                          builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add Identity
@@ -34,6 +35,8 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 // Add this to the existing service registrations
 builder.Services.AddScoped<RentalEquipmentManagementLogic.ISharedAuthenticationService,
     RentalEquipmentManagementLogic.SharedAuthenticationService>();
+
+
 
 // The rest of your Program.cs remains the same
 // Ensure Identity database is created
@@ -112,7 +115,8 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Configure Rotativa for PDF exports
+Rotativa.AspNetCore.RotativaConfiguration.Setup(app.Environment.WebRootPath, "Rotativa");
+
 app.Run();
-
-
 

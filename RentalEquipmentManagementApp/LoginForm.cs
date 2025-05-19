@@ -28,7 +28,7 @@ namespace RentalEquipmentManagementApp
                     return;
                 }
 
-                if (user.Role != "Admin" && user.Role != "Manager" && user.Role != "RentalManager")
+                if (user.Role != "Admin" && user.Role != "Manager" && user.Role != "RentalManager" && user.Role != "Administrator")
                 {
                     MessageBox.Show("Access denied. This application is for administrators and managers only.");
                     return;
